@@ -31,12 +31,18 @@ export default function App() {
 
           <Text className="text-sm font-pregular text-gray-100 mt-7 text-center">
             Where shared passions connect: discover meaningful connections and
-            build lasting friendships with CommonGround
+            build lasting friendships
           </Text>
 
           <CustomButton
             title="Continue with Email"
             handlePress={() => router.push("/sign-in")}
+            containerStyles="w-full mt-7"
+          />
+
+          <CustomButton
+            title="Sign up for an account"
+            handlePress={() => router.push("/sign-up")}
             containerStyles="w-full mt-7"
           />
         </View>
