@@ -6,6 +6,8 @@ import { Image } from "react-native";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
 import { Link } from "expo-router";
+import { FIREBASE_AUTH } from "../../firebaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -15,8 +17,24 @@ const SignUp = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const submit = () => {};
+  const auth = FIREBASE_AUTH;
+  const signUpWithFirebase = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
+      console.log(response);
+      alert("Check your email!");
+    } catch (error) {
+      console.log(error);
+      alert("Registration failed: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView className="bg-background h-full">
@@ -59,7 +77,7 @@ const SignUp = () => {
 
           <CustomButton
             title="Sign Up"
-            handlePress={submit}
+            handlePress={() => signUpWithFirebase()}
             containerStyles="mt-7"
             isLoading={isSubmitting}
           />

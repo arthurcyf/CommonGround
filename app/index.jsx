@@ -5,6 +5,7 @@ import { images } from "../constants";
 import CustomButton from "../components/CustomButton";
 import { Redirect, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { FIREBASE_APP, FIREBASE_AUTH, FIRESTORE_DB } from "../firebaseConfig";
 
 export default function App() {
   return (
