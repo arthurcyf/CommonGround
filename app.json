@@ -5,13 +5,18 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "CommonGround",
+    "scheme": "commonground",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "sdkVersion": "52.0.0",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.CommondGround.CommonGround",
+      "googleServicesFile": "./app/GoogleService-Info.plist"
     },
     "android": {
+      "package": "com.CommondGround.CommonGround",
+      "googleServicesFile": "./app/google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
@@ -35,6 +40,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "156f2c92-bf60-4050-a82f-60c794120c2d"
+      }
     }
   }
 }

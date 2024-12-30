@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "533701465679",
+    "project_id": "commonground-84817",
+    "storage_bucket": "commonground-84817.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533701465679:android:e7c61aa0e759369ee93c3a",
+        "android_client_info": {
+          "package_name": "com.CommonGround.CommonGround"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmwK-6n_1EjheavNYyzpuDk6blZyE_wjk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
