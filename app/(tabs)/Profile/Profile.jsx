@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity } from "react-native";
 import React from "react";
+import Icon from "react-native-vector-icons/FontAwesome"; // Import FontAwesome icons
 
 const Profile = () => {
   const userData = {
@@ -7,7 +8,6 @@ const Profile = () => {
     userImg: "https://ih1.redbubble.net/image.3234094934.5591/fcp,small,wall_texture,product,750x1000.webp", // Sample image URL
   };
 
-  // Sample upcoming events
   const events = [
     {
       name: "New Year's Eve Party",
@@ -29,7 +29,6 @@ const Profile = () => {
     },
   ];
 
-  // Sample friends list
   const friends = [
     {
       name: "Brandon",
@@ -45,24 +44,7 @@ const Profile = () => {
     },
   ];
 
-  // Remove friend function
-  const handleRemoveFriend = (friendName) => {
-    alert(`${friendName} has been removed from your friends list.`);
-  };
-
-  // Chat with friend function
-  const handleChatWithFriend = (friendName) => {
-    alert(`Starting a chat with ${friendName}.`);
-  };
-
-  // View More Button Handlers
-  const handleViewMoreEvents = () => {
-    alert("Viewing all upcoming events...");
-  };
-
-  const handleViewMoreFriends = () => {
-    alert("Viewing all friends...");
-  };
+  const primaryColor = "#FF6100";  // Manually reference primary color
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -79,7 +61,7 @@ const Profile = () => {
       <View style={styles.eventsSection}>
         <Text style={styles.eventsHeader}>Upcoming Events</Text>
         <View style={styles.eventsList}>
-          {events.slice(0, 3).map((event, index) => (
+          {events.map((event, index) => (
             <View key={index} style={styles.eventCard}>
               <Text style={styles.eventName}>{event.name}</Text>
               <Text style={styles.eventLocation}>{event.location}</Text>
@@ -89,7 +71,10 @@ const Profile = () => {
           ))}
         </View>
         {/* View More Button */}
-        <TouchableOpacity style={styles.viewMoreBtn} onPress={handleViewMoreEvents}>
+        <TouchableOpacity 
+          style={[styles.viewMoreBtn, { backgroundColor: primaryColor }]} 
+          onPress={() => alert("Viewing all upcoming events...")}
+        >
           <Text style={styles.viewMoreText}>View More</Text>
         </TouchableOpacity>
       </View>
@@ -98,7 +83,7 @@ const Profile = () => {
       <View style={styles.networkSection}>
         <Text style={styles.networkHeader}>Friends</Text>
         <View style={styles.friendsList}>
-          {friends.slice(0, 3).map((friend, index) => (
+          {friends.map((friend, index) => (
             <View key={index} style={styles.friendCard}>
               <Image 
                 source={{ uri: friend.profileImg }} 
@@ -107,23 +92,26 @@ const Profile = () => {
               <Text style={styles.friendName}>{friend.name}</Text>
               <View style={styles.friendActions}>
                 <TouchableOpacity 
-                  style={styles.friendBtn} 
-                  onPress={() => handleChatWithFriend(friend.name)}
+                  style={[styles.friendBtn, { backgroundColor: primaryColor }]} 
+                  onPress={() => alert(`Starting a chat with ${friend.name}.`)}
                 >
-                  <Text style={styles.friendBtnText}>Chat</Text>
+                  <Icon name="comments" size={20} color="#fff" /> {/* Chat bubble icon */}
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.friendBtn} 
-                  onPress={() => handleRemoveFriend(friend.name)}
+                  style={[styles.friendBtn, { backgroundColor: primaryColor }]} 
+                  onPress={() => alert(`${friend.name} has been removed from your friends list.`)}
                 >
-                  <Text style={styles.friendBtnText}>Remove</Text>
+                  <Icon name="trash" size={20} color="#fff" /> {/* Dustbin (trash) icon */}
                 </TouchableOpacity>
               </View>
             </View>
           ))}
         </View>
         {/* View More Button */}
-        <TouchableOpacity style={styles.viewMoreBtn} onPress={handleViewMoreFriends}>
+        <TouchableOpacity 
+          style={[styles.viewMoreBtn, { backgroundColor: primaryColor }]} 
+          onPress={() => alert("Viewing all friends...")}
+        >
           <Text style={styles.viewMoreText}>View More</Text>
         </TouchableOpacity>
       </View>
@@ -140,6 +128,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
     paddingTop: 40,
+    paddingBottom: 100,
   },
   profilePic: {
     width: 120,
@@ -170,7 +159,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   eventsList: {
-    maxHeight: 500,
+    marginBottom: 10,
   },
   eventCard: {
     marginBottom: 15,
@@ -219,7 +208,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   friendsList: {
-    maxHeight: 3000,
+    marginBottom: 20,
   },
   friendCard: {
     flexDirection: 'row',
@@ -250,20 +239,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   friendBtn: {
-    backgroundColor: '#007BFF',
-    padding: 8,
+    padding: 10,
     borderRadius: 5,
     marginLeft: 5,
-  },
-  friendBtnText: {
-    color: '#fff',
-    fontSize: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   viewMoreBtn: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: '#007BFF',
-    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
