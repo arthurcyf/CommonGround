@@ -8,17 +8,19 @@ import { Menu, MenuOptions, MenuTrigger } from "react-native-popup-menu";
 import { MenuItem } from "./CustomMenuItems";
 import { Feather } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ios = Platform.OS == "ios";
 
 export default function ChatHeader({ user, router }) {
-  const { top } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
   const handleProfile = () => {};
   return (
-    <View
+    <SafeAreaView
       style={{
-        paddingTop: top + 10,
-        marginTop: ios ? -70 : 0,
+        paddingBottom: Platform.OS === "ios" ? -20 : 10,
+        paddingTop: Platform.OS === "ios" ? top : 10,
+        marginTop: Platform.OS === "ios" ? -top - 30 : 0,
       }}
       className="flex-row justify-between items-center px-5 bg-primary pb-3"
     >
@@ -51,6 +53,6 @@ export default function ChatHeader({ user, router }) {
           />
         </MenuOptions>
       </Menu>
-    </View>
+    </SafeAreaView>
   );
 }
