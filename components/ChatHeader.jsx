@@ -18,7 +18,7 @@ export default function ChatHeader({ user, router }) {
     <View
       style={{
         paddingTop: top + 10,
-        marginTop: ios ? -50 : 0,
+        marginTop: ios ? -70 : 0,
       }}
       className="flex-row justify-between items-center px-5 bg-primary pb-3"
     >
