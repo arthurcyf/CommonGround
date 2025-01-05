@@ -1,13 +1,15 @@
 import { ScrollView, Text, View, TouchableOpacity, Switch } from "react-native";
 import React, { useState } from "react";
+import { useRouter } from 'expo-router';
+import { getAuth, signOut } from "firebase/auth";
 
 const Settings = () => {
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const handleLogout = () => {
-    console.log("User logged out");
-  };
+  const router = useRouter();
+
+  const auth = getAuth();
 
   const handleDeleteAccount = () => {
     console.log("Account deletion initiated");
@@ -102,11 +104,20 @@ const Settings = () => {
 
       {/* Logout Button */}
       <TouchableOpacity
-        className="bg-red-600  py-3 rounded-lg mt-10 w-11/12"
-        onPress={handleLogout}
+        className="bg-red-600 py-3 rounded-lg mt-10 w-11/12"
+        onPress={async () => {
+          try {
+            await signOut(auth);
+            router.replace("/new-user");
+            console.log("User signed out successfully.");
+          } catch (error) {
+            console.error("Error signing out: ", error.message);
+          }
+        }}
       >
         <Text className="text-white text-lg font-bold text-center">Logout</Text>
       </TouchableOpacity>
+
 
       {/* Delete Account Button */}
       <TouchableOpacity
