@@ -25,7 +25,7 @@ const MainLayout = () => {
       if (typeof isAuthenticated == " undefined") {
         return;
       } else if (isAuthenticated && !isInApp) {
-        await router.replace("home");
+        await router.replace("UserDetails");
       } else {
         await router.replace("new-user");
       }
