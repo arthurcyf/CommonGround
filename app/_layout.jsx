@@ -1,5 +1,5 @@
 import { useFonts } from "expo-font";
-import { Stack, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
@@ -16,15 +16,12 @@ const MainLayout = () => {
   });
 
   const { isAuthenticated } = useAuth();
-  const segments = useSegments();
 
   useEffect(() => {
     async function handleNavigation() {
-      const isInApp = segments[0] == "(tabs)";
-
       if (typeof isAuthenticated == " undefined") {
         return;
-      } else if (isAuthenticated && !isInApp) {
+      } else if (isAuthenticated) {
         await router.replace("home");
       } else {
         await router.replace("new-user");

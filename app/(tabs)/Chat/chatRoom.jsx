@@ -11,7 +11,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
-import ChatHeader from "../../../components/ChatHeader.jsx";
+import ChatRoomHeader from "../../../components/ChatRoomHeader.jsx";
 import CustomKeyboardView from "../../../components/CustomKeyboardView.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { getRoomId } from "../../../utils/common.js";
@@ -129,7 +129,7 @@ export default function chatRoom() {
   return (
     <SafeAreaView className="flex-1 bg-gray-60">
       {/* Header */}
-      <ChatHeader user={item} router={router} />
+      <ChatRoomHeader user={item} router={router} />
       <CustomKeyboardView inChat={true}>
         {/* Chat Messages */}
         <View style={{ flex: 1 }}>

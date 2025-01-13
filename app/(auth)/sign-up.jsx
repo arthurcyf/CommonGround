@@ -28,7 +28,7 @@ const SignUp = () => {
         form.email,
         form.password
       );
-      username = form.username;
+      username = form.username.toLowerCase();
 
       await setDoc(doc(FIRESTORE_DB, "users", response?.user?.uid), {
         username,
