@@ -3,12 +3,13 @@ import { Text, TextInput, View, TouchableOpacity, Alert, Keyboard, TouchableWith
 import { useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from "moment";
-import { Picker } from "@react-native-picker/picker";
 import { Button } from "react-native-paper"; // Import from react-native-paper
 import { KeyboardAvoidingView, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker"; // Import image picker
 import { createUser } from "../service/UserService";  // Adjust the path to your file
 import { useAuth } from "../../context/AuthContext";
+import { collection, getDocs } from "firebase/firestore";
+import { FIRESTORE_DB } from "../../firebaseConfig"; // Adjust path if needed
 
 const UserDetails = () => {
     const router = useRouter();
@@ -21,7 +22,7 @@ const UserDetails = () => {
     const [profilePicture, setProfilePicture] = useState(null); // State for profile picture
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
-    const [showGenderPicker, setShowGenderPicker] = useState(false);
+    const [allInterests, setAllInterests] = useState([]); // Holds fetched interests
 
     const defaultProfilePicture = "https://t3.ftcdn.net/jpg/00/64/67/80/360_F_64678017_zUpiZFjj04cnLri7oADnyMH0XBYyQghG.jpg"; // Replace with your default image URL
 
@@ -30,45 +31,68 @@ const UserDetails = () => {
             router.replace("home");
         }
         // Do not reset `isSigningUp` immediately; handle it after profile completion
-    }, [isSigningUp, router]);    
-    
+        // Fetch interests from Firestore
+        const fetchInterests = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(FIRESTORE_DB, "interests"));
+                const interestsList = querySnapshot.docs.map((doc) => doc.data().name); // Assuming 'name' is the field
+                setAllInterests(interestsList);
+            } catch (error) {
+                console.error("Error fetching interests:", error);
+                Alert.alert("Error", "Unable to fetch interests. Please try again.");
+            }
+        };
+
+        fetchInterests();
+    }, [isSigningUp, router]);
+
 
     const handleSubmit = async () => {
-        // Ensure that all required fields are filled before submitting
-        if (!dateOfBirth || !gender || !interests.length) {
+        const missingFields = [];
+    
+        if (!dateOfBirth) {
+            missingFields.push("Date of Birth");
+        }
+        if (!gender) {
+            missingFields.push("Gender");
+        }
+        if (!interests.length) {
+            missingFields.push("Interests");
+        }
+    
+        if (missingFields.length > 0) {
             Alert.alert(
-                "Error",
-                "Please complete all required fields before submitting."
+                "Missing Information",
+                `Please complete the following fields before submitting:\n ${missingFields.join("\n- ")}`
             );
             return;
         }
-
+    
         // Use the default profile picture if none is selected
         const userProfilePicture = profilePicture || defaultProfilePicture;
-
+    
         // Prepare the user data to be sent to the backend
         const userData = {
             dateOfBirth,
             gender,
             interests,
-            description,
+            description, // Optional: Include if the user enters it, otherwise it remains empty
             profilePicture: userProfilePicture,
         };
-
+    
         try {
             // Call the createUser function from userService
             await createUser(userData);
-
+    
             // After successful user creation, navigate to the home page or show a success message
             Alert.alert("Success", "Your profile has been created!");
-            console.log("this is the " + userData);
+            console.log("User data submitted:", userData);
             router.push("/home");
         } catch (error) {
             Alert.alert("Error", "An error occurred while creating your profile.");
             console.error("Error creating user:", error);
         }
-    };
-
+    };    
 
     const handleNext = () => {
         if (currentStep === 4) {
@@ -105,13 +129,6 @@ const UserDetails = () => {
             </Text>
         ));
     };
-
-    const interestsList = [
-        "Cycling", "Sports", "Gaming", "Photography", "Food", "Traveling",
-        "Shopping", "Karaoke", "Hiking", "Nature", "Movies", "Volunteering",
-        "Crafting", "DIY", "Cafes", "Boardgames", "Painting", "Knitting",
-        "Gardening", "Dancing", "Mahjong", "Others"
-    ];
 
     const toggleInterest = (interest) => {
         setInterests((prevInterests) => {
@@ -216,57 +233,36 @@ const UserDetails = () => {
                                     <Text style={{ fontWeight: 'bold', textAlign: 'center' }} className="text-lg mb-2">
                                         Gender
                                     </Text>
-                                    <TouchableOpacity
+                                    <View
                                         style={{
-                                            borderWidth: 1,
-                                            borderColor: 'gray',
-                                            borderRadius: 5,
-                                            padding: 10,
-                                            width: "100%",
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            marginBottom: 10, // Space between the gender box and the button
+                                            flexDirection: "row",
+                                            justifyContent: "center",
+                                            marginBottom: 10,
                                         }}
-                                        onPress={() => setShowGenderPicker(true)}
                                     >
-                                        <Text style={{ color: gender ? 'black' : 'gray' }}>
-                                            {gender || "Select Gender"}
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                    {showGenderPicker && (
-                                        <View
-                                            style={{
-                                                position: 'absolute',
-                                                top: 90, // Moves the picker upwards to cover the box
-                                                left: 0,
-                                                right: 0,
-                                                zIndex: 1,
-                                                backgroundColor: "white",
-                                                borderRadius: 10,
-                                                padding: 10,
-                                            }}
-                                        >
-                                            <Picker
-                                                selectedValue={gender}
-                                                onValueChange={(itemValue) => {
-                                                    setGender(itemValue);
-                                                    setShowGenderPicker(false); // Hide picker after selection
-                                                }}
+                                        {["Male", "Female", "Others"].map((option) => (
+                                            <TouchableOpacity
+                                                key={option}
+                                                onPress={() => setGender(option)}
                                                 style={{
-                                                    width: "100%",
-                                                    height: 150, // Adjust the height as needed to make it more spacious
+                                                    backgroundColor: gender === option ? "#FF6100" : "#F3F4F6",
+                                                    paddingVertical: 10,
+                                                    paddingHorizontal: 20,
+                                                    borderRadius: 20,
+                                                    marginHorizontal: 5,
+                                                    borderWidth: 1,
+                                                    borderColor: gender === option ? "#FF6100" : "#D1D5DB",
                                                 }}
                                             >
-                                                <Picker.Item label="Select Gender" value="" />
-                                                <Picker.Item label="Male" value="Male" />
-                                                <Picker.Item label="Female" value="Female" />
-                                                <Picker.Item label="Others" value="Others" />
-                                            </Picker>
-                                        </View>
-                                    )}
+                                                <Text style={{ color: gender === option ? "white" : "black" }}>
+                                                    {option}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
                                 </View>
                             )}
+
 
                             {currentStep === 2 && (
                                 <View className="mb-5">
@@ -280,7 +276,7 @@ const UserDetails = () => {
                                             justifyContent: "center", // Centers the interests items
                                         }}
                                     >
-                                        {interestsList.map((interest, index) => (
+                                        {allInterests.map((interest, index) => (
                                             <TouchableOpacity
                                                 key={index}
                                                 style={{
@@ -304,13 +300,24 @@ const UserDetails = () => {
                             )}
 
                             {currentStep === 3 && (
-                                <View className="mb-5">
-                                    <Text style={{ fontWeight: 'bold', textAlign: 'center' }} className="text-lg mb-2">
-                                        Description
+                                <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 20, width: '100%' }}>
+                                    <Text style={{ fontWeight: 'bold', textAlign: 'center', marginBottom: 10 }} className="text-lg">
+                                        Write a Short Description About Yourself
                                     </Text>
                                     <TextInput
-                                        className="border border-gray-300 rounded-lg p-3 text-lg h-24 text-top w-full"
-                                        placeholder="Write a short description about yourself"
+                                        style={{
+                                            borderColor: '#ccc',
+                                            borderWidth: 1,
+                                            borderRadius: 8,
+                                            padding: 10,
+                                            textAlignVertical: 'top',
+                                            width: '90%', // Ensures input box doesn't touch the edges
+                                            minHeight: 100, // Ensure a proper height for multiline input
+                                            textAlign: 'center', // Centralizes the text inside the input
+                                            fontSize: 16,
+                                            backgroundColor: '#F3F4F6',
+                                        }}
+                                        placeholder="Write something about yourself..."
                                         value={description}
                                         onChangeText={setDescription}
                                         multiline
@@ -318,10 +325,11 @@ const UserDetails = () => {
                                 </View>
                             )}
 
+
                             {/* New Step for Profile Picture */}
                             {currentStep === 4 && (
-                                <View className="mb-5">
-                                    <Text style={{ fontWeight: 'bold', textAlign: 'center' }} className="text-lg mb-2">
+                                <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 20, width: '100%' }}>
+                                    <Text style={{ fontWeight: 'bold', textAlign: 'center', marginBottom: 10 }} className="text-lg">
                                         Profile Picture
                                     </Text>
 
@@ -338,7 +346,16 @@ const UserDetails = () => {
                                             />
                                         </View>
                                     ) : (
-                                        <Text>No profile picture selected</Text> // make this center
+                                        <Text
+                                            style={{
+                                                textAlign: 'center',
+                                                color: '#999',
+                                                fontSize: 16,
+                                                marginBottom: 20, // Space between text and buttons
+                                            }}
+                                        >
+                                            No profile picture selected
+                                        </Text>
                                     )}
 
                                     <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 10 }}>
@@ -371,11 +388,10 @@ const UserDetails = () => {
                                         >
                                             Take a Photo
                                         </Button>
-
-
                                     </View>
                                 </View>
                             )}
+
                         </View>
                     </View>
 
