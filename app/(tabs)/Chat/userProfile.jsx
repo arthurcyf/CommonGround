@@ -17,18 +17,19 @@ import { Feather } from "react-native-vector-icons";
 const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { id } = useLocalSearchParams();
+  const { item } = useLocalSearchParams();
   const router = useRouter();
 
   useEffect(() => {
-    if (id) {
+    if (item) {
       fetchUser();
     }
-  }, [id]);
+  }, [item]);
 
   const fetchUser = async () => {
     try {
-      const userDoc = await getDoc(doc(usersRef, id));
+      const parsedItem = JSON.parse(item);
+      const userDoc = await getDoc(doc(usersRef, parsedItem?.id));
       if (userDoc.exists()) {
         setUser(userDoc.data());
       } else {
@@ -86,6 +87,11 @@ const UserProfile = () => {
             }}
           />
 
+          {/* Username */}
+          <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10 }}>
+            @{user.username || "Unknown User"}
+          </Text>
+
           {/* Action Buttons */}
           <View style={{ flexDirection: "row", marginBottom: 20 }}>
             {/* Message Button */}
@@ -99,7 +105,7 @@ const UserProfile = () => {
               onPress={() => {
                 router.push({
                   pathname: "/Chat/chatRoom",
-                  params: { id: id },
+                  params: { item: JSON.stringify(user) },
                 });
               }}
             >

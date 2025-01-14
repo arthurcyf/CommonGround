@@ -49,11 +49,16 @@ const findUser = () => {
     }
   };
 
+  const openUserProfile = (item) => {
+    router.push({
+      pathname: "/Chat/userProfile",
+      params: { item: JSON.stringify(item) }, // Serialize `item`
+    });
+  };
+
   const renderUserItem = (item, index) => (
     <TouchableOpacity
-      onPress={() => {
-        router.push({ pathname: "/Chat/userProfile", params: { id: item.id } });
-      }}
+      onPress={() => openUserProfile(item)}
       key={item.id}
       style={{
         paddingVertical: 15,

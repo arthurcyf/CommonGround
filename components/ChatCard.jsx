@@ -14,6 +14,7 @@ import { FIRESTORE_DB } from "@/firebaseConfig";
 
 export default function ChatCard({ item, router, currentUser }) {
   const [lastMessage, setLastMessage] = useState(undefined);
+
   useEffect(() => {
     let roomId = getRoomId(currentUser?.uid, item?.userId);
     const docRef = doc(FIRESTORE_DB, "rooms", roomId);
@@ -30,7 +31,10 @@ export default function ChatCard({ item, router, currentUser }) {
   }, []);
 
   const openChatRoom = () => {
-    router.push({ pathname: "/Chat/chatRoom", params: item });
+    router.push({
+      pathname: "/Chat/chatRoom",
+      params: { item: JSON.stringify(item) },
+    });
   };
 
   const renderLastMessage = () => {
@@ -58,7 +62,7 @@ export default function ChatCard({ item, router, currentUser }) {
       className="flex-row items-center p-4 bg-white border-b border-gray-200"
       onPress={openChatRoom}
     >
-      {/* change to use expo image when images are uploaded */}
+      {/* Profile Image */}
       <Image
         source={require("../assets/icons/avatar.png")}
         style={{ height: hp(6), aspectRatio: 1 }}
