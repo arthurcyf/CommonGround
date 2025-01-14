@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, TextInput, View, TouchableOpacity, Alert, Keyboard, TouchableWithoutFeedback, Image } from "react-native";
 import { useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -8,9 +8,11 @@ import { Button } from "react-native-paper"; // Import from react-native-paper
 import { KeyboardAvoidingView, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker"; // Import image picker
 import { createUser } from "../service/UserService";  // Adjust the path to your file
+import { useAuth } from "../../context/AuthContext";
 
 const UserDetails = () => {
     const router = useRouter();
+    const { isSigningUp, setIsSigningUp } = useAuth();
 
     const [dateOfBirth, setDateOfBirth] = useState("");
     const [gender, setGender] = useState("");
@@ -22,6 +24,14 @@ const UserDetails = () => {
     const [showGenderPicker, setShowGenderPicker] = useState(false);
 
     const defaultProfilePicture = "https://t3.ftcdn.net/jpg/00/64/67/80/360_F_64678017_zUpiZFjj04cnLri7oADnyMH0XBYyQghG.jpg"; // Replace with your default image URL
+
+    useEffect(() => {
+        if (!isSigningUp) {
+            router.replace("home");
+        }
+        // Do not reset `isSigningUp` immediately; handle it after profile completion
+    }, [isSigningUp, router]);    
+    
 
     const handleSubmit = async () => {
         // Ensure that all required fields are filled before submitting

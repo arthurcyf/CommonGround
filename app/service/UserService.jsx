@@ -1,22 +1,35 @@
-import { collection, getDocs, addDoc, Timestamp } from "firebase/firestore"; // Import required functions
+import { collection, doc, setDoc, Timestamp } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../firebaseConfig.js"; // Your Firestore configuration
+import { getAuth } from "firebase/auth";
 
 // Define the users collection
 const usersCollection = collection(FIRESTORE_DB, "users");
 
-// Function to create user details
+// Function to create or update user details
 async function createUser(userData) {
   try {
-    // Add a new document to the users collection with the userData
-    const docRef = await addDoc(usersCollection, {
-      ...userData,
-      createdAt: Timestamp.now(), // Add timestamp when the user is created
-    });
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
 
-    console.log("User created with ID:", docRef.id);
-    return docRef.id; // Return the document ID after creation
+    if (!currentUser) {
+      throw new Error("No authenticated user found.");
+    }
+
+    const userId = currentUser.uid; // Use the current user's UID
+
+    // Set or update the user document
+    await setDoc(
+      doc(FIRESTORE_DB, "users", userId), 
+      {
+        ...userData,
+        createdAt: Timestamp.now(), // Include a timestamp if creating the document
+      },
+      { merge: true } // Merge: true ensures existing data is not overwritten
+    );
+
+    console.log("User created or updated successfully for UID:", userId);
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("Error creating/updating user:", error);
     throw error; // Rethrow error for further handling
   }
 }
