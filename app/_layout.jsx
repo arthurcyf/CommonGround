@@ -15,15 +15,19 @@ const MainLayout = () => {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isSigningUp } = useAuth();
+  const segments = useSegments();
 
   useEffect(() => {
     async function handleNavigation() {
-      if (typeof isAuthenticated == " undefined") {
+      const isInApp = segments[0] === "(tabs)";
+
+      if (typeof isAuthenticated === "undefined") {
         return;
-      } else if (isAuthenticated) {
+      }
+      if (isAuthenticated && !isInApp) {
         await router.replace("home");
-      } else {
+      } else if (!isAuthenticated) {
         await router.replace("new-user");
       }
     }
@@ -34,6 +38,7 @@ const MainLayout = () => {
     }
   }, [loaded, isAuthenticated]);
 
+
   if (!loaded) {
     return null;
   }
@@ -43,10 +48,10 @@ const MainLayout = () => {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      {/* <Stack.Screen name="/search/[query]" options={{ headerShown: false }} /> */}
     </Stack>
   );
 };
+
 export default function RootLayout() {
   return (
     <AuthContextProvider>

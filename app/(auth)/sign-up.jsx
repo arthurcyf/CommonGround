@@ -10,6 +10,8 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from "../../firebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import CustomKeyboardView from "../../components/CustomKeyboardView";
+import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "expo-router";
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -19,30 +21,35 @@ const SignUp = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setIsSigningUp } = useAuth();
   const auth = FIREBASE_AUTH;
+  const router = useRouter();
+
   const signUpWithFirebase = async () => {
     setIsSubmitting(true);
     try {
       const response = await createUserWithEmailAndPassword(
-        auth,
-        form.email,
-        form.password
+          auth,
+          form.email,
+          form.password
       );
-      username = form.username.toLowerCase();
+      const username = form.username;
 
       await setDoc(doc(FIRESTORE_DB, "users", response?.user?.uid), {
-        username,
-        userId: response?.user?.uid,
+          username,
+          userId: response?.user?.uid,
       });
-      console.log(response);
+
+        // Set signing-up state and ensure navigation
+        setIsSigningUp(true);
+        await router.replace("UserDetails");
     } catch (error) {
-      let msg = error.message;
-      if (msg.includes("(auth/invalid-email)")) msg = "Invalid email";
-      alert(msg);
+        alert(error.message.includes("(auth/invalid-email)") ? "Invalid email" : error.message);
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
-  };
+};
+
 
   return (
     <SafeAreaView className="bg-background h-full">
@@ -55,7 +62,6 @@ const SignUp = () => {
                 className="w-[80px] h-[80px]"
                 resizeMode="contain"
               />
-
               <Text className="text-4xl text-white">CommonGround</Text>
             </View>
             <Text className="text-2xl text-white text-semibold mt-10 font-psemibold">
