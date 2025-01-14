@@ -11,7 +11,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
-import ChatHeader from "../../../components/ChatHeader.jsx";
+import ChatRoomHeader from "../../../components/ChatRoomHeader.jsx";
 import CustomKeyboardView from "../../../components/CustomKeyboardView.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { getRoomId } from "../../../utils/common.js";
@@ -33,7 +33,8 @@ import MessageList from "../../../components/MessageList.jsx";
 const ios = Platform.OS == "ios";
 
 export default function chatRoom() {
-  const item = useLocalSearchParams();
+  const { item } = useLocalSearchParams();
+  const parsedItem = JSON.parse(item); // Parse the item
   const { user } = useAuth();
   const router = useRouter();
   const [messages, setMessages] = useState([]);
@@ -42,7 +43,7 @@ export default function chatRoom() {
   const scrollViewRef = useRef(null);
 
   const createRoomIfNotExists = async () => {
-    let roomId = getRoomId(user?.uid, item?.userId);
+    let roomId = getRoomId(user?.uid, parsedItem?.userId);
     await setDoc(doc(FIRESTORE_DB, "rooms", roomId), {
       roomId,
       createdAt: Timestamp.fromDate(new Date()),
@@ -72,14 +73,14 @@ export default function chatRoom() {
     if (!message) return;
     const senderName = await getUsernameByUserId(user?.uid);
     try {
-      let roomId = getRoomId(user?.uid, item?.userId);
+      let roomId = getRoomId(user?.uid, parsedItem?.userId);
       const docRef = doc(FIRESTORE_DB, "rooms", roomId);
       const messagesRef = collection(docRef, "messages");
 
       textRef.current = "";
       if (inputRef) inputRef?.current?.clear();
 
-      const newDoc = await addDoc(messagesRef, {
+      await addDoc(messagesRef, {
         userId: user?.uid,
         text: message,
         senderName: senderName || "Unknown",
@@ -103,7 +104,7 @@ export default function chatRoom() {
 
   useEffect(() => {
     createRoomIfNotExists();
-    let roomId = getRoomId(user?.uid, item?.userId);
+    let roomId = getRoomId(user?.uid, parsedItem?.userId);
     const docRef = doc(FIRESTORE_DB, "rooms", roomId);
     const messagesRef = collection(docRef, "messages");
     const q = query(messagesRef, orderBy("createdAt", "asc"));
@@ -129,7 +130,7 @@ export default function chatRoom() {
   return (
     <SafeAreaView className="flex-1 bg-gray-60">
       {/* Header */}
-      <ChatHeader user={item} router={router} />
+      <ChatRoomHeader user={parsedItem} router={router} />
       <CustomKeyboardView inChat={true}>
         {/* Chat Messages */}
         <View style={{ flex: 1 }}>

@@ -1,6 +1,6 @@
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Alert } from "react-native";
 import React, { useEffect } from "react";
-import Header from "../../../components/Header.jsx";
+import ChatHeader from "../../../components/ChatHeader.jsx";
 import ChatList from "../../../components/ChatList.jsx";
 import { useState } from "react";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
@@ -8,6 +8,7 @@ import { StatusBar } from "expo-status-bar";
 import { useAuth } from "@/context/AuthContext.jsx";
 import { getDocs, query, where } from "firebase/firestore";
 import { usersRef } from "@/firebaseConfig.js";
+import { router } from "expo-router";
 
 const ChatMenu = () => {
   const { user } = useAuth();
@@ -31,9 +32,13 @@ const ChatMenu = () => {
     setUsers(data);
   };
 
+  const handleAddChat = () => {
+    router.push("/(tabs)/Chat/findUser");
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      <Header text="Chats" />
+      <ChatHeader onAddChat={handleAddChat} />
       <StatusBar style="light" />
 
       {users.length > 0 ? (
