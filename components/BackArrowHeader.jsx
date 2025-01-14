@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { Feather } from "react-native-vector-icons";
 import { useRouter } from "expo-router";
 
-const UserProfileHeader = () => {
+const BackArrowHeader = () => {
   const router = useRouter();
 
   return (
@@ -27,4 +27,4 @@ const UserProfileHeader = () => {
   );
 };
 
-export default UserProfileHeader;
+export default BackArrowHeader;
