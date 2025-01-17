@@ -1,5 +1,5 @@
 import { useFonts } from "expo-font";
-import { Stack, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
@@ -15,18 +15,19 @@ const MainLayout = () => {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isSigningUp } = useAuth();
   const segments = useSegments();
 
   useEffect(() => {
     async function handleNavigation() {
-      const isInApp = segments[0] == "(tabs)";
+      const isInApp = segments[0] === "(tabs)";
 
-      if (typeof isAuthenticated == " undefined") {
+      if (typeof isAuthenticated === "undefined") {
         return;
-      } else if (isAuthenticated && !isInApp) {
+      }
+      if (isAuthenticated && !isInApp) {
         await router.replace("home");
-      } else {
+      } else if (!isAuthenticated) {
         await router.replace("new-user");
       }
     }
@@ -37,6 +38,7 @@ const MainLayout = () => {
     }
   }, [loaded, isAuthenticated]);
 
+
   if (!loaded) {
     return null;
   }
@@ -46,10 +48,10 @@ const MainLayout = () => {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      {/* <Stack.Screen name="/search/[query]" options={{ headerShown: false }} /> */}
     </Stack>
   );
 };
+
 export default function RootLayout() {
   return (
     <AuthContextProvider>
