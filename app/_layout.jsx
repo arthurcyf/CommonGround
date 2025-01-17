@@ -9,6 +9,7 @@ import { AuthContextProvider, useAuth } from "../context/AuthContext";
 import { router } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 SplashScreen.preventAutoHideAsync();
+import { useSegments } from "expo-router";
 
 const MainLayout = () => {
   const [loaded] = useFonts({
@@ -37,7 +38,6 @@ const MainLayout = () => {
       handleNavigation();
     }
   }, [loaded, isAuthenticated]);
-
 
   if (!loaded) {
     return null;

@@ -1,35 +1,71 @@
-import { View, ActivityIndicator, Alert } from "react-native";
-import React, { useEffect } from "react";
+import { View, ActivityIndicator, Text } from "react-native";
+import React, { useEffect, useState } from "react";
 import ChatHeader from "../../../components/ChatHeader.jsx";
 import ChatList from "../../../components/ChatList.jsx";
-import { useState } from "react";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { StatusBar } from "expo-status-bar";
 import { useAuth } from "@/context/AuthContext.jsx";
-import { getDocs, query, where } from "firebase/firestore";
-import { usersRef } from "@/firebaseConfig.js";
+import {
+  getDocs,
+  doc,
+  getDoc,
+  query,
+  where,
+  collection,
+} from "firebase/firestore";
+import { usersRef, FIRESTORE_DB } from "@/firebaseConfig.js";
 import { router } from "expo-router";
 
 const ChatMenu = () => {
   const { user } = useAuth();
-
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.uid) getUsers();
+    if (user?.uid) fetchChatConnections();
   }, [user?.uid]);
 
-  const getUsers = async () => {
-    const q = query(usersRef, where("userId", "!=", user?.uid));
+  const fetchChatConnections = async () => {
+    try {
+      setLoading(true);
 
-    const querySnapshot = await getDocs(q);
+      // Fetch friends
+      const friendsRef = doc(FIRESTORE_DB, "friends", user.uid);
+      const friendsDoc = await getDoc(friendsRef);
+      const friendIds = friendsDoc.exists()
+        ? Object.keys(friendsDoc.data())
+        : [];
 
-    let data = [];
-    querySnapshot.forEach((doc) => {
-      data.push({ userId: doc.id, ...doc.data() });
-    });
+      // Fetch users from chatRooms
+      const chatRoomsRef = collection(FIRESTORE_DB, "rooms");
+      const chatQuery = query(
+        chatRoomsRef,
+        where("participants", "array-contains", user.uid)
+      );
+      const chatRoomsSnapshot = await getDocs(chatQuery);
 
-    setUsers(data);
+      const chatUserIds = chatRoomsSnapshot.docs.flatMap(
+        (doc) => doc.data()?.participants.filter((id) => id !== user.uid) || []
+      );
+
+      // Combine and deduplicate user IDs
+      const uniqueUserIds = [...new Set([...friendIds, ...chatUserIds])];
+
+      // Fetch user details
+      const userDetails = await Promise.all(
+        uniqueUserIds.map(async (id) => {
+          const userDoc = await getDoc(doc(usersRef, id));
+          return { userId: id, ...userDoc.data() };
+        })
+      );
+
+      setUsers(userDetails);
+    } catch (error) {
+      console.error("Error fetching chat connections:", error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddChat = () => {
@@ -41,11 +77,15 @@ const ChatMenu = () => {
       <ChatHeader onAddChat={handleAddChat} />
       <StatusBar style="light" />
 
-      {users.length > 0 ? (
+      {loading ? (
+        <View className="flex items-center" style={{ top: hp(30) }}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : users.length > 0 ? (
         <ChatList users={users} currentUser={user} />
       ) : (
         <View className="flex items-center" style={{ top: hp(30) }}>
-          <ActivityIndicator size="large" />
+          <Text>No connections found.</Text>
         </View>
       )}
     </View>

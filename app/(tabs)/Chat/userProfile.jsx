@@ -42,7 +42,7 @@ const UserProfile = () => {
   const fetchUser = async () => {
     try {
       const parsedItem = JSON.parse(item);
-      const userDoc = await getDoc(doc(usersRef, parsedItem?.id));
+      const userDoc = await getDoc(doc(usersRef, parsedItem?.userId));
       if (userDoc.exists()) {
         const fetchedUser = userDoc.data();
         setTargetUser(fetchedUser);

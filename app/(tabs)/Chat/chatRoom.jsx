@@ -43,10 +43,13 @@ export default function chatRoom() {
   const scrollViewRef = useRef(null);
 
   const createRoomIfNotExists = async () => {
-    let roomId = getRoomId(user?.uid, parsedItem?.userId);
-    await setDoc(doc(FIRESTORE_DB, "rooms", roomId), {
+    const roomId = getRoomId(user?.uid, parsedItem?.userId);
+    const roomRef = doc(FIRESTORE_DB, "rooms", roomId);
+
+    await setDoc(roomRef, {
       roomId,
       createdAt: Timestamp.fromDate(new Date()),
+      participants: [user?.uid, parsedItem?.userId],
     });
   };
 
