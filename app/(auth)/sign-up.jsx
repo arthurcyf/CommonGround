@@ -28,17 +28,17 @@ const SignUp = () => {
   const signUpWithFirebase = async () => {
     setIsSubmitting(true);
     try {
-        const response = await createUserWithEmailAndPassword(
-            auth,
-            form.email,
-            form.password
-        );
-        const username = form.username;
+      const response = await createUserWithEmailAndPassword(
+          auth,
+          form.email,
+          form.password
+      );
+      const username = form.username;
 
-        await setDoc(doc(FIRESTORE_DB, "users", response?.user?.uid), {
-            username,
-            userId: response?.user?.uid,
-        });
+      await setDoc(doc(FIRESTORE_DB, "users", response?.user?.uid), {
+          username,
+          userId: response?.user?.uid,
+      });
 
         // Set signing-up state and ensure navigation
         setIsSigningUp(true);
