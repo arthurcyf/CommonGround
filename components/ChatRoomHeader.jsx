@@ -15,7 +15,11 @@ const ChatHeader = ({ user, router }) => {
   const ios = Platform.OS == "ios";
 
   const handleProfile = () => {
-    // Navigate to profile or handle profile logic here
+    // Navigate to the UserProfile screen
+    router.push({
+      pathname: "/Chat/userProfile", // Adjust the route to your `UserProfile` component path
+      params: { item: JSON.stringify(user) },
+    });
   };
 
   return (

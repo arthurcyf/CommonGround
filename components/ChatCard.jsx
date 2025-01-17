@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
-import { formatDate, getRoomId } from "../utils/common.js";
+import { formatTime, getRoomId } from "../utils/common.js";
 import {
   collection,
   doc,
@@ -53,7 +53,7 @@ export default function ChatCard({ item, router, currentUser }) {
   const renderTime = () => {
     if (lastMessage) {
       let date = lastMessage?.createdAt;
-      return formatDate(new Date(date?.seconds * 1000));
+      return formatTime(new Date(date?.seconds * 1000));
     }
   };
 
