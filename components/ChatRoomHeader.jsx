@@ -3,12 +3,10 @@ import React from "react";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
-import { blurhash } from "../utils/common";
-import { Menu, MenuOptions, MenuTrigger } from "react-native-popup-menu";
-import { MenuItem } from "./CustomMenuItems";
 import { Feather } from "react-native-vector-icons";
 import { TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { blurhash } from "../utils/common";
 
 const ChatHeader = ({ user, router }) => {
   const { top } = useSafeAreaInsets();
@@ -61,35 +59,24 @@ const ChatHeader = ({ user, router }) => {
         </Text>
       </View>
 
-      {/* Profile Menu */}
-      <Menu>
-        <MenuTrigger>
-          <Image
-            style={{
-              height: hp(4.3),
-              width: hp(4.3),
-              borderRadius: hp(2.15),
-              borderWidth: 1,
-              borderColor: "#ddd",
-            }}
-            source={{
-              uri:
-                user.profilePicture ||
-                "https://picsum.photos/seed/696/3000/2000",
-            }}
-            placeholder={{ blurhash }}
-            transition={500}
-          />
-        </MenuTrigger>
-        <MenuOptions>
-          <MenuItem
-            text="Profile"
-            action={handleProfile}
-            value={null}
-            icon={<Feather name="user" size={hp(2.5)} color="#FF6100" />}
-          />
-        </MenuOptions>
-      </Menu>
+      {/* Profile Image */}
+      <TouchableOpacity onPress={handleProfile}>
+        <Image
+          style={{
+            height: hp(4.3),
+            width: hp(4.3),
+            borderRadius: hp(2.15),
+            borderWidth: 1,
+            borderColor: "#ddd",
+          }}
+          source={{
+            uri:
+              user.profilePicture || "https://picsum.photos/seed/696/3000/2000",
+          }}
+          placeholder={{ blurhash }}
+          transition={500}
+        />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
