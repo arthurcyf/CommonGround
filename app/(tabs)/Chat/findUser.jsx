@@ -7,8 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { usersRef } from "@/firebaseConfig";
-import { query, orderBy, startAt, endAt, getDocs } from "firebase/firestore";
+import { fetchUsersByUsername } from "@/service/UserService";
 import FindUserHeader from "../../../components/FindUserHeader.jsx";
 import { Feather } from "react-native-vector-icons";
 
@@ -18,36 +17,13 @@ const findUser = () => {
   const router = useRouter();
 
   useEffect(() => {
-    fetchUsers();
-  }, [username]);
-
-  const fetchUsers = async () => {
-    try {
-      const normalizedUsername = username.toLowerCase().trim();
-      if (normalizedUsername === "") {
-        setResults([]);
-        return;
-      }
-
-      const endAtString = `${normalizedUsername}\uf8ff\uf8ff\uf8ff`;
-      const q = query(
-        usersRef,
-        orderBy("username"),
-        startAt(normalizedUsername),
-        endAt(endAtString)
-      );
-
-      const querySnapshot = await getDocs(q);
-      const users = [];
-      querySnapshot.forEach((doc) => {
-        users.push({ id: doc.id, ...doc.data() });
-      });
-
+    const fetchData = async () => {
+      const users = await fetchUsersByUsername(username);
       setResults(users);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  };
+    };
+
+    fetchData();
+  }, [username]);
 
   const openUserProfile = (item) => {
     router.push({

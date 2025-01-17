@@ -5,16 +5,10 @@ import ChatList from "../../../components/ChatList.jsx";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { StatusBar } from "expo-status-bar";
 import { useAuth } from "@/context/AuthContext.jsx";
-import {
-  getDocs,
-  doc,
-  getDoc,
-  query,
-  where,
-  collection,
-} from "firebase/firestore";
-import { usersRef, FIRESTORE_DB } from "@/firebaseConfig.js";
+import { listenToChatRoomsWithDetails } from "@/service/RoomService";
+import { fetchFriendsWithDetails } from "@/service/FriendService.jsx";
 import { router } from "expo-router";
+import { listenToLatestMessages } from "@/service/MessageService.jsx";
 
 const ChatMenu = () => {
   const { user } = useAuth();
@@ -22,51 +16,79 @@ const ChatMenu = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.uid) fetchChatConnections();
-  }, [user?.uid]);
+    let unsubscribeRooms;
+    const messageListeners = [];
 
-  const fetchChatConnections = async () => {
-    try {
+    const updateUsersWithLatestMessage = (roomId, latestMessage) => {
+      setUsers((prevUsers) =>
+        prevUsers
+          .map((user) =>
+            user.roomId === roomId ? { ...user, latestMessage } : user
+          )
+          .sort((a, b) => {
+            const aTime = a?.latestMessage?.createdAt?.seconds || 0;
+            const bTime = b?.latestMessage?.createdAt?.seconds || 0;
+            return bTime - aTime; // Descending order
+          })
+      );
+    };
+
+    if (user?.uid) {
       setLoading(true);
 
-      // Fetch friends
-      const friendsRef = doc(FIRESTORE_DB, "friends", user.uid);
-      const friendsDoc = await getDoc(friendsRef);
-      const friendIds = friendsDoc.exists()
-        ? Object.keys(friendsDoc.data())
-        : [];
+      unsubscribeRooms = listenToChatRoomsWithDetails(
+        user.uid,
+        async (rooms) => {
+          try {
+            const friends = await fetchFriendsWithDetails(user.uid);
 
-      // Fetch users from chatRooms
-      const chatRoomsRef = collection(FIRESTORE_DB, "rooms");
-      const chatQuery = query(
-        chatRoomsRef,
-        where("participants", "array-contains", user.uid)
+            const allUsers = [
+              ...friends,
+              ...rooms.map((room) => ({
+                ...room.otherUser,
+                latestMessage: room.latestMessage,
+                roomId: room.roomId,
+              })),
+            ];
+
+            // Attach real-time listeners for new messages
+            const uniqueUsers = Array.from(
+              new Map(allUsers.map((user) => [user.userId, user])).values()
+            ).sort((a, b) => {
+              const aTime = a?.latestMessage?.createdAt?.seconds || 0;
+              const bTime = b?.latestMessage?.createdAt?.seconds || 0;
+              return bTime - aTime; // Descending order
+            });
+
+            setUsers(uniqueUsers);
+
+            // Listen to latest messages for each room
+            uniqueUsers.forEach((user) => {
+              if (user.roomId) {
+                const unsubscribe = listenToLatestMessages(
+                  user.roomId,
+                  (latestMessage) =>
+                    updateUsersWithLatestMessage(user.roomId, latestMessage)
+                );
+                messageListeners.push(unsubscribe);
+              }
+            });
+          } catch (error) {
+            console.error("Error updating chat list:", error);
+            setUsers([]);
+          } finally {
+            setLoading(false);
+          }
+        }
       );
-      const chatRoomsSnapshot = await getDocs(chatQuery);
-
-      const chatUserIds = chatRoomsSnapshot.docs.flatMap(
-        (doc) => doc.data()?.participants.filter((id) => id !== user.uid) || []
-      );
-
-      // Combine and deduplicate user IDs
-      const uniqueUserIds = [...new Set([...friendIds, ...chatUserIds])];
-
-      // Fetch user details
-      const userDetails = await Promise.all(
-        uniqueUserIds.map(async (id) => {
-          const userDoc = await getDoc(doc(usersRef, id));
-          return { userId: id, ...userDoc.data() };
-        })
-      );
-
-      setUsers(userDetails);
-    } catch (error) {
-      console.error("Error fetching chat connections:", error);
-      setUsers([]);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    // Cleanup listeners
+    return () => {
+      if (unsubscribeRooms) unsubscribeRooms();
+      messageListeners.forEach((unsubscribe) => unsubscribe());
+    };
+  }, [user?.uid]);
 
   const handleAddChat = () => {
     router.push("/(tabs)/Chat/findUser");

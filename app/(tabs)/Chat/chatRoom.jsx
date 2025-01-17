@@ -6,7 +6,6 @@ import {
   Platform,
   SafeAreaView,
   Alert,
-  Keyboard,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -15,22 +14,15 @@ import ChatRoomHeader from "../../../components/ChatRoomHeader.jsx";
 import CustomKeyboardView from "../../../components/CustomKeyboardView.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { getRoomId } from "../../../utils/common.js";
-import { FIRESTORE_DB } from "../../../firebaseConfig.js";
 import {
-  query,
-  setDoc,
-  doc,
-  collection,
-  Timestamp,
-  addDoc,
-  where,
-  getDocs,
-  orderBy,
-  onSnapshot,
-} from "firebase/firestore";
+  createRoomIfNotExists,
+  fetchRoomMessages,
+} from "@/service/RoomService";
+import { sendMessage, listenForMessages } from "@/service/MessageService";
+import { getUsernameByUserId } from "@/service/UserService";
 import MessageList from "../../../components/MessageList.jsx";
 
-const ios = Platform.OS == "ios";
+const ios = Platform.OS === "ios";
 
 export default function chatRoom() {
   const { item } = useLocalSearchParams();
@@ -42,52 +34,48 @@ export default function chatRoom() {
   const inputRef = useRef("");
   const scrollViewRef = useRef(null);
 
-  const createRoomIfNotExists = async () => {
-    const roomId = getRoomId(user?.uid, parsedItem?.userId);
-    const roomRef = doc(FIRESTORE_DB, "rooms", roomId);
+  const roomId = getRoomId(user?.uid, parsedItem?.userId);
 
-    await setDoc(roomRef, {
-      roomId,
-      createdAt: Timestamp.fromDate(new Date()),
-      participants: [user?.uid, parsedItem?.userId],
-    });
-  };
+  useEffect(() => {
+    const initializeRoom = async () => {
+      await createRoomIfNotExists(roomId, [user?.uid, parsedItem?.userId]);
+    };
+    initializeRoom();
+  }, []);
 
-  const getUsernameByUserId = async (userId) => {
-    try {
-      const usersRef = collection(FIRESTORE_DB, "users");
-      const q = query(usersRef, where("userId", "==", userId));
-      const querySnapshot = await getDocs(q);
+  useEffect(() => {
+    const fetchAndListenMessages = async () => {
+      const messagesRef = await fetchRoomMessages(roomId);
 
-      if (!querySnapshot.empty) {
-        const userData = querySnapshot.docs[0].data();
-        return userData.username;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching username:", error);
-      throw new Error("Could not retrieve username.");
-    }
-  };
+      const unsubscribe = listenForMessages(messagesRef, (fetchedMessages) => {
+        setMessages(fetchedMessages);
+        updateScrollView();
+      });
+
+      return () => {
+        unsubscribe();
+      };
+    };
+
+    fetchAndListenMessages();
+  }, []);
 
   const handleSendMessage = async () => {
     let message = textRef.current.trim();
     if (!message) return;
-    const senderName = await getUsernameByUserId(user?.uid);
+
     try {
-      let roomId = getRoomId(user?.uid, parsedItem?.userId);
-      const docRef = doc(FIRESTORE_DB, "rooms", roomId);
-      const messagesRef = collection(docRef, "messages");
+      const senderName = await getUsernameByUserId(user?.uid);
+      const messagesRef = await fetchRoomMessages(roomId);
 
       textRef.current = "";
       if (inputRef) inputRef?.current?.clear();
 
-      await addDoc(messagesRef, {
+      await sendMessage(messagesRef, {
         userId: user?.uid,
         text: message,
         senderName: senderName || "Unknown",
-        createdAt: Timestamp.fromDate(new Date()),
+        createdAt: new Date(),
       });
     } catch (error) {
       Alert.alert("Message", error.message);
@@ -95,47 +83,16 @@ export default function chatRoom() {
     }
   };
 
-  useEffect(() => {
-    updateScrollView();
-  }, [messages]);
-
   const updateScrollView = () => {
     setTimeout(() => {
       scrollViewRef?.current?.scrollToEnd({ animated: true });
     }, 100);
   };
 
-  useEffect(() => {
-    createRoomIfNotExists();
-    let roomId = getRoomId(user?.uid, parsedItem?.userId);
-    const docRef = doc(FIRESTORE_DB, "rooms", roomId);
-    const messagesRef = collection(docRef, "messages");
-    const q = query(messagesRef, orderBy("createdAt", "asc"));
-
-    let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages = snapshot.docs.map((doc) => {
-        return doc.data();
-      });
-      setMessages([...allMessages]);
-    });
-
-    const KeyBoardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      updateScrollView
-    );
-
-    return () => {
-      unsub();
-      KeyBoardDidShowListener.remove();
-    };
-  }, []);
-
   return (
     <SafeAreaView className="flex-1 bg-gray-60">
-      {/* Header */}
       <ChatRoomHeader user={parsedItem} router={router} />
       <CustomKeyboardView inChat={true}>
-        {/* Chat Messages */}
         <View style={{ flex: 1 }}>
           <MessageList
             messages={messages}
@@ -143,7 +100,6 @@ export default function chatRoom() {
             scrollViewRef={scrollViewRef}
           />
         </View>
-        {/* Input Field */}
         <View style={{ marginBottom: -1 }}>
           <View className="flex-row justify-between py-3 bg-white border p-2 border-neutral-200">
             <TextInput
