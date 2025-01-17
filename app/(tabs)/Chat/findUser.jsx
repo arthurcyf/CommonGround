@@ -83,7 +83,7 @@ const findUser = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <FindUserHeader />
       <View style={{ padding: 20 }}>
         <View
