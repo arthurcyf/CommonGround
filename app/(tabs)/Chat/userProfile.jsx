@@ -9,25 +9,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import { usersRef } from "@/firebaseConfig";
 import BackArrowHeader from "../../../components/BackArrowHeader.jsx";
 import { Feather } from "react-native-vector-icons";
-import {
-  collection,
-  addDoc,
-  query,
-  where,
-  getDocs,
-  Timestamp,
-} from "firebase/firestore";
-import { FIRESTORE_DB } from "@/firebaseConfig";
 import { useAuth } from "../../../context/AuthContext.jsx";
+import { fetchUserById } from "@/service/UserService";
+import { isFriend, removeFriend } from "@/service/FriendService";
+import { sendFriendRequest } from "@/service/FriendRequestService";
 
 const UserProfile = () => {
   const [targetUser, setTargetUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isFriend, setIsFriend] = useState(false);
+  const [isFriendStatus, setIsFriendStatus] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
   const { item } = useLocalSearchParams();
   const router = useRouter();
@@ -35,28 +27,19 @@ const UserProfile = () => {
 
   useEffect(() => {
     if (item) {
-      fetchUser();
+      fetchUserProfile();
     }
   }, [item]);
 
-  const fetchUser = async () => {
+  const fetchUserProfile = async () => {
     try {
       const parsedItem = JSON.parse(item);
-      const userDoc = await getDoc(doc(usersRef, parsedItem?.id));
-      if (userDoc.exists()) {
-        const fetchedUser = userDoc.data();
-        setTargetUser(fetchedUser);
+      const userDetails = await fetchUserById(parsedItem?.userId);
+      setTargetUser(userDetails);
 
-        // Check if the user is already a friend
-        const friendsRef = doc(FIRESTORE_DB, "friends", user.uid);
-        const friendsDoc = await getDoc(friendsRef);
-
-        if (friendsDoc.exists() && friendsDoc.data()[fetchedUser.userId]) {
-          setIsFriend(true); // Set to true if they are already friends
-        }
-      } else {
-        console.error("User not found");
-      }
+      // Check if the current user and target user are friends
+      const friendStatus = await isFriend(user.uid, userDetails.userId);
+      setIsFriendStatus(friendStatus);
     } catch (error) {
       console.error("Error fetching user profile:", error);
     } finally {
@@ -64,6 +47,11 @@ const UserProfile = () => {
     }
   };
 
+  /**
+   * Calculate age based on date of birth.
+   * @param {string} dob - Date of birth in ISO format.
+   * @returns {number | null} - Calculated age or null if invalid DOB.
+   */
   const calculateAge = (dob) => {
     if (!dob) return null;
     const birthDate = new Date(dob);
@@ -92,60 +80,21 @@ const UserProfile = () => {
 
   const handleSendFriendRequest = async () => {
     try {
-      // Check if a request already exists
-      const friendRequestsRef = collection(FIRESTORE_DB, "friendRequests");
-
-      const q = query(
-        friendRequestsRef,
-        where("senderId", "==", user?.uid), // `user.uid` is the current logged-in user's ID
-        where("receiverId", "==", targetUser.userId) // `user.id` is the target user's ID
-      );
-
-      const existingRequests = await getDocs(q);
-
-      if (!existingRequests.empty) {
-        alert("Friend request already sent!");
-        return;
-      }
-
-      // Add a new friend request
-      await addDoc(friendRequestsRef, {
-        senderId: user.uid, // Replace with the logged-in user's UID
-        receiverId: targetUser.userId, // Replace with the current profile's UID
-        status: "pending",
-        createdAt: Timestamp.now(),
-      });
+      await sendFriendRequest(user.uid, targetUser.userId);
       setRequestSent(true);
       alert("Friend request sent successfully!");
     } catch (error) {
-      console.error("Error sending friend request:", error);
-      setRequestSent(false);
-      alert("Error sending friend request. Please try again later.");
+      alert(error.message || "Error sending friend request.");
     }
   };
 
   const handleRemoveFriend = async () => {
     try {
-      // References for both users' friend documents
-      const userFriendsRef = doc(FIRESTORE_DB, "friends", user.uid);
-      const targetUserFriendsRef = doc(
-        FIRESTORE_DB,
-        "friends",
-        targetUser.userId
-      );
-
-      // Delete both friend documents
-      await Promise.all([
-        deleteDoc(userFriendsRef),
-        deleteDoc(targetUserFriendsRef),
-      ]);
-
-      // Update UI state
-      setIsFriend(false);
+      await removeFriend(user.uid, targetUser.userId);
+      setIsFriendStatus(false);
       alert("Friend removed successfully.");
     } catch (error) {
-      console.error("Error removing friend:", error);
-      alert("Error removing friend. Please try again later.");
+      alert(error.message || "Error removing friend.");
     }
   };
 
@@ -242,7 +191,7 @@ const UserProfile = () => {
             </TouchableOpacity>
 
             {/* Friend Request Button */}
-            {isFriend ? (
+            {isFriendStatus ? (
               <TouchableOpacity
                 style={{
                   flex: 1,
