@@ -44,6 +44,7 @@
     "expo-symbols": "~0.2.0",
     "expo-system-ui": "~4.0.6",
     "expo-web-browser": "~14.0.1",
+    "express": "^4.21.2",
     "firebase": "^11.1.0",
     "function-bind": "^1.1.2",
     "moment": "^2.30.1",
