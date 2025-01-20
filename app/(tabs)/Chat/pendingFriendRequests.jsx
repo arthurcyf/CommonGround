@@ -9,20 +9,14 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../../../context/AuthContext";
 import { useRouter } from "expo-router";
-import {
-  collection,
-  deleteDoc,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-  setDoc,
-  getDoc,
-} from "firebase/firestore";
-import { FIRESTORE_DB } from "@/firebaseConfig";
 import BackArrowHeader from "../../../components/BackArrowHeader.jsx";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  fetchPendingFriendRequests,
+  updateFriendRequestStatus,
+  deleteFriendRequest,
+} from "@/service/FriendRequestService";
+import { addFriends } from "@/service/FriendService";
 
 const PendingFriendRequests = () => {
   const [friendRequests, setFriendRequests] = useState([]);
@@ -31,40 +25,13 @@ const PendingFriendRequests = () => {
   const router = useRouter();
 
   useEffect(() => {
-    fetchFriendRequests();
+    fetchRequests();
   }, []);
 
-  const fetchFriendRequests = async () => {
+  const fetchRequests = async () => {
     try {
       setLoading(true);
-      const friendRequestsRef = collection(FIRESTORE_DB, "friendRequests");
-      const q = query(
-        friendRequestsRef,
-        where("receiverId", "==", user.uid),
-        where("status", "==", "pending")
-      );
-
-      const querySnapshot = await getDocs(q);
-
-      const requests = await Promise.all(
-        querySnapshot.docs.map(async (requestDoc) => {
-          const requestData = requestDoc.data();
-
-          const senderRef = doc(FIRESTORE_DB, "users", requestData.senderId);
-          const senderDoc = await getDoc(senderRef);
-
-          const senderUsername = senderDoc.exists()
-            ? senderDoc.data().username
-            : "Unknown User";
-
-          return {
-            id: requestDoc.id,
-            ...requestData,
-            senderUsername,
-          };
-        })
-      );
-
+      const requests = await fetchPendingFriendRequests(user.uid);
       setFriendRequests(requests);
     } catch (error) {
       console.error("Error fetching friend requests:", error);
@@ -75,24 +42,14 @@ const PendingFriendRequests = () => {
 
   const handleFriendRequest = async (requestId, status, senderId) => {
     try {
-      const friendRequestRef = doc(FIRESTORE_DB, "friendRequests", requestId);
-
-      // Update the status of the friend request
-      await updateDoc(friendRequestRef, { status });
-
       if (status === "accepted") {
-        // Add both users to each other's friend lists
-        const userFriendsRef = doc(FIRESTORE_DB, "friends", user.uid);
-        const senderFriendsRef = doc(FIRESTORE_DB, "friends", senderId);
-
-        await Promise.all([
-          setDoc(userFriendsRef, { [senderId]: true }, { merge: true }),
-          setDoc(senderFriendsRef, { [user.uid]: true }, { merge: true }),
-        ]);
+        await addFriends(user.uid, senderId); // Add users to each other's friend list
       } else if (status === "rejected") {
-        // Remove the friend request from the collection
-        await deleteDoc(friendRequestRef);
+        await deleteFriendRequest(requestId); // Remove the friend request
       }
+
+      // Update the friend request status
+      await updateFriendRequestStatus(requestId, status);
 
       // Remove the request from the local state
       setFriendRequests((prev) =>

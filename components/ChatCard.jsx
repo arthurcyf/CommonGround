@@ -2,32 +2,17 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
-import { formatDate, getRoomId } from "../utils/common.js";
-import {
-  collection,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
-import { FIRESTORE_DB } from "@/firebaseConfig";
+import { formatTime, getRoomId } from "../utils/common.js";
+import { listenToLatestMessages } from "@/service/MessageService";
 
 export default function ChatCard({ item, router, currentUser }) {
   const [lastMessage, setLastMessage] = useState(undefined);
 
   useEffect(() => {
     let roomId = getRoomId(currentUser?.uid, item?.userId);
-    const docRef = doc(FIRESTORE_DB, "rooms", roomId);
-    const messagesRef = collection(docRef, "messages");
-    const q = query(messagesRef, orderBy("createdAt", "desc"));
+    const unsubscribe = listenToLatestMessages(roomId, setLastMessage);
 
-    let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages = snapshot.docs.map((doc) => {
-        return doc.data();
-      });
-      setLastMessage(allMessages[0] ? allMessages[0] : null);
-    });
-    return unsub;
+    return unsubscribe; // Cleanup listener on component unmount
   }, []);
 
   const openChatRoom = () => {
@@ -38,22 +23,19 @@ export default function ChatCard({ item, router, currentUser }) {
   };
 
   const renderLastMessage = () => {
-    if (typeof lastMessage == "undefined") return "Loading...";
+    if (typeof lastMessage === "undefined") return "Loading...";
     if (lastMessage) {
-      if (currentUser?.uid == lastMessage?.userId) {
-        return "You: " + lastMessage?.text;
-      } else {
-        return lastMessage?.text;
-      }
-    } else {
-      return "Say Hi! 👋";
+      return currentUser?.uid === lastMessage?.userId
+        ? `You: ${lastMessage?.text}`
+        : lastMessage?.text;
     }
+    return "Say Hi! 👋";
   };
 
   const renderTime = () => {
     if (lastMessage) {
-      let date = lastMessage?.createdAt;
-      return formatDate(new Date(date?.seconds * 1000));
+      const date = lastMessage?.createdAt;
+      return formatTime(new Date(date?.seconds * 1000));
     }
   };
 
