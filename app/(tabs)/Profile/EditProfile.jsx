@@ -101,7 +101,7 @@ const EditProfile = () => {
           doc(FIRESTORE_DB, "users", userId),
           {
             profilePicture: profilePic,
-            username: username.toLowerCase,
+            username: username.toLowerCase(),
             dateOfBirth,
             gender,
             interests,
