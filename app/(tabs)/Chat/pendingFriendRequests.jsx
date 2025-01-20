@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../../../context/AuthContext";
@@ -21,6 +22,7 @@ import { addFriends } from "@/service/FriendService";
 const PendingFriendRequests = () => {
   const [friendRequests, setFriendRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -40,18 +42,28 @@ const PendingFriendRequests = () => {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const requests = await fetchPendingFriendRequests(user.uid);
+      setFriendRequests(requests);
+    } catch (error) {
+      console.error("Error refreshing friend requests:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const handleFriendRequest = async (requestId, status, senderId) => {
     try {
       if (status === "accepted") {
-        await addFriends(user.uid, senderId); // Add users to each other's friend list
+        await addFriends(user.uid, senderId);
       } else if (status === "rejected") {
-        await deleteFriendRequest(requestId); // Remove the friend request
+        await deleteFriendRequest(requestId);
       }
 
-      // Update the friend request status
       await updateFriendRequestStatus(requestId, status);
 
-      // Remove the request from the local state
       setFriendRequests((prev) =>
         prev.filter((request) => request.id !== requestId)
       );
@@ -128,6 +140,9 @@ const PendingFriendRequests = () => {
         data={friendRequests}
         keyExtractor={(item) => item.id}
         renderItem={renderRequest}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         contentContainerStyle={{ paddingBottom: 20 }}
         ListEmptyComponent={
           <View style={{ padding: 20, alignItems: "center" }}>

@@ -28,7 +28,7 @@ const ChatMenu = () => {
           .sort((a, b) => {
             const aTime = a?.latestMessage?.createdAt?.seconds || 0;
             const bTime = b?.latestMessage?.createdAt?.seconds || 0;
-            return bTime - aTime; // Descending order
+            return bTime - aTime;
           })
       );
     };
@@ -51,18 +51,16 @@ const ChatMenu = () => {
               })),
             ];
 
-            // Attach real-time listeners for new messages
             const uniqueUsers = Array.from(
               new Map(allUsers.map((user) => [user.userId, user])).values()
             ).sort((a, b) => {
               const aTime = a?.latestMessage?.createdAt?.seconds || 0;
               const bTime = b?.latestMessage?.createdAt?.seconds || 0;
-              return bTime - aTime; // Descending order
+              return bTime - aTime;
             });
 
             setUsers(uniqueUsers);
 
-            // Listen to latest messages for each room
             uniqueUsers.forEach((user) => {
               if (user.roomId) {
                 const unsubscribe = listenToLatestMessages(
@@ -83,7 +81,6 @@ const ChatMenu = () => {
       );
     }
 
-    // Cleanup listeners
     return () => {
       if (unsubscribeRooms) unsubscribeRooms();
       messageListeners.forEach((unsubscribe) => unsubscribe());
