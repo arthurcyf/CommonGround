@@ -1,4 +1,11 @@
-import { ScrollView, Text, View, Image, TextInput, TouchableOpacity } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  Image,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { getDoc, doc, collection, getDocs } from "firebase/firestore";
@@ -10,7 +17,9 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Picker } from "@react-native-picker/picker";
 
 const EditProfile = () => {
-  const [profilePic, setProfilePic] = useState("https://example.com/default-avatar.png");
+  const [profilePic, setProfilePic] = useState(
+    "https://example.com/default-avatar.png"
+  );
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState(""); // Stores the selected date
@@ -24,18 +33,18 @@ const EditProfile = () => {
     const fetchUserData = async () => {
       const auth = getAuth();
       const currentUser = auth.currentUser;
-    
+
       if (currentUser) {
         const userId = currentUser.uid;
         try {
-          // Retrieve email from Firebase Auth
           setEmail(currentUser.email || "");
-    
-          // Retrieve additional user data from Firestore
+
           const userDoc = await getDoc(doc(FIRESTORE_DB, "users", userId));
           if (userDoc.exists()) {
             const data = userDoc.data();
-            setProfilePic(data.profilePicture || "https://example.com/default-avatar.png");
+            setProfilePic(
+              data.profilePicture || "https://example.com/default-avatar.png"
+            );
             setUsername(data.username || "");
             setDateOfBirth(data.dateOfBirth || "");
             setGender(data.gender || "");
@@ -48,7 +57,7 @@ const EditProfile = () => {
       } else {
         console.error("No user is signed in.");
       }
-    };    
+    };
 
     const fetchAvailableInterests = async () => {
       try {
@@ -76,23 +85,23 @@ const EditProfile = () => {
   const saveChanges = async () => {
     const auth = getAuth();
     const currentUser = auth.currentUser;
-  
+
     if (currentUser) {
       const userId = currentUser.uid;
-  
+
       try {
         // Update the email in Firebase Authentication
         if (email && email !== currentUser.email) {
           await currentUser.updateEmail(email);
           console.log("Email updated in Firebase Authentication");
         }
-  
+
         // Update other user details in Firestore
         await setDoc(
           doc(FIRESTORE_DB, "users", userId),
           {
             profilePicture: profilePic,
-            username,
+            username: username.toLowerCase,
             dateOfBirth,
             gender,
             interests,
@@ -100,17 +109,18 @@ const EditProfile = () => {
           },
           { merge: true }
         );
-  
+
         alert("Profile updated successfully!");
       } catch (error) {
         console.error("Error updating profile: ", error);
-        alert("An error occurred while updating your profile. Please try again.");
+        alert(
+          "An error occurred while updating your profile. Please try again."
+        );
       }
     } else {
       alert("No user is signed in. Please sign in and try again.");
     }
   };
-  
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -146,13 +156,27 @@ const EditProfile = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: "center", padding: 20, backgroundColor: "#fff", paddingTop: 40, paddingBottom: 100 }}>
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        alignItems: "center",
+        padding: 20,
+        backgroundColor: "#fff",
+        paddingTop: 40,
+        paddingBottom: 100,
+      }}
+    >
       {/* Profile Picture */}
       <View style={{ alignItems: "center", marginVertical: 20 }}>
         <TouchableOpacity onPress={pickImage}>
           <Image
             source={{ uri: profilePic }}
-            style={{ width: 120, height: 120, borderRadius: 60, marginBottom: 10 }}
+            style={{
+              width: 120,
+              height: 120,
+              borderRadius: 60,
+              marginBottom: 10,
+            }}
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -165,13 +189,24 @@ const EditProfile = () => {
             marginTop: 10,
           }}
         >
-          <Text style={{ color: "#fff", fontSize: 16, textAlign: "center" }}>Change Profile Picture</Text>
+          <Text style={{ color: "#fff", fontSize: 16, textAlign: "center" }}>
+            Change Profile Picture
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* Username */}
       <View style={{ width: "100%", marginVertical: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 5 }}>Username</Text>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: 5,
+          }}
+        >
+          Username
+        </Text>
         <TextInput
           value={username}
           onChangeText={setUsername}
@@ -190,7 +225,16 @@ const EditProfile = () => {
 
       {/* Email */}
       <View style={{ width: "100%", marginVertical: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 5 }}>Email</Text>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: 5,
+          }}
+        >
+          Email
+        </Text>
         <TextInput
           value={email}
           onChangeText={setEmail}
@@ -210,7 +254,16 @@ const EditProfile = () => {
 
       {/* Date of Birth */}
       <View style={{ width: "100%", marginVertical: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 5 }}>Date of Birth</Text>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: 5,
+          }}
+        >
+          Date of Birth
+        </Text>
         <TouchableOpacity
           onPress={showDatePicker}
           style={{
@@ -236,8 +289,23 @@ const EditProfile = () => {
 
       {/* Gender */}
       <View style={{ width: "100%", marginVertical: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 5 }}>Gender</Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10 }}>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: 5,
+          }}
+        >
+          Gender
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            marginTop: 10,
+          }}
+        >
           {/* Male Button */}
           <TouchableOpacity
             onPress={() => setGender("Male")}
@@ -248,7 +316,14 @@ const EditProfile = () => {
               borderRadius: 20,
             }}
           >
-            <Text style={{ color: gender === "Male" ? "#fff" : "#333", fontSize: 16 }}>Male</Text>
+            <Text
+              style={{
+                color: gender === "Male" ? "#fff" : "#333",
+                fontSize: 16,
+              }}
+            >
+              Male
+            </Text>
           </TouchableOpacity>
 
           {/* Female Button */}
@@ -261,7 +336,14 @@ const EditProfile = () => {
               borderRadius: 20,
             }}
           >
-            <Text style={{ color: gender === "Female" ? "#fff" : "#333", fontSize: 16 }}>Female</Text>
+            <Text
+              style={{
+                color: gender === "Female" ? "#fff" : "#333",
+                fontSize: 16,
+              }}
+            >
+              Female
+            </Text>
           </TouchableOpacity>
 
           {/* Others Button */}
@@ -274,22 +356,39 @@ const EditProfile = () => {
               borderRadius: 20,
             }}
           >
-            <Text style={{ color: gender === "Others" ? "#fff" : "#333", fontSize: 16 }}>Others</Text>
+            <Text
+              style={{
+                color: gender === "Others" ? "#fff" : "#333",
+                fontSize: 16,
+              }}
+            >
+              Others
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-
       {/* Interests */}
       <View style={{ width: "100%", marginVertical: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 5 }}>Interests</Text>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: 5,
+          }}
+        >
+          Interests
+        </Text>
         <View style={{ flexWrap: "wrap", flexDirection: "row", marginTop: 5 }}>
           {availableInterests.map((interest, index) => (
             <TouchableOpacity
               key={index}
               onPress={() => toggleInterest(interest)}
               style={{
-                backgroundColor: interests.includes(interest) ? "#FF6100" : "#E0E0E0",
+                backgroundColor: interests.includes(interest)
+                  ? "#FF6100"
+                  : "#E0E0E0",
                 paddingHorizontal: 15,
                 paddingVertical: 8,
                 borderRadius: 20,
@@ -298,7 +397,15 @@ const EditProfile = () => {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: interests.includes(interest) ? "#fff" : "#333", fontSize: 14, marginRight: 8 }}>{interest}</Text>
+              <Text
+                style={{
+                  color: interests.includes(interest) ? "#fff" : "#333",
+                  fontSize: 14,
+                  marginRight: 8,
+                }}
+              >
+                {interest}
+              </Text>
               {interests.includes(interest) && (
                 <TouchableOpacity onPress={() => toggleInterest(interest)}>
                   <Icon name="times" size={14} color="#fff" />
@@ -311,7 +418,16 @@ const EditProfile = () => {
 
       {/* Description */}
       <View style={{ width: "100%", marginVertical: 10 }}>
-        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 5 }}>Description</Text>
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: 5,
+          }}
+        >
+          Description
+        </Text>
         <TextInput
           value={description}
           onChangeText={setDescription}
