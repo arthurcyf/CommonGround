@@ -18,6 +18,7 @@ import {
   deleteFriendRequest,
 } from "@/service/FriendRequestService";
 import { addFriends } from "@/service/FriendService";
+import { createRoomIfNotExists } from "@/service/RoomService";
 
 const PendingFriendRequests = () => {
   const [friendRequests, setFriendRequests] = useState([]);
@@ -58,6 +59,9 @@ const PendingFriendRequests = () => {
     try {
       if (status === "accepted") {
         await addFriends(user.uid, senderId);
+
+        const roomId = [user.uid, senderId].sort().join("-");
+        await createRoomIfNotExists(roomId, [user.uid, senderId]);
       } else if (status === "rejected") {
         await deleteFriendRequest(requestId);
       }

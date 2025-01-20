@@ -66,11 +66,16 @@ export const fetchChatRoomsWithDetails = async (userId) => {
 export const createRoomIfNotExists = async (roomId, participants) => {
   try {
     const roomRef = doc(FIRESTORE_DB, "rooms", roomId);
-    await setDoc(roomRef, {
-      roomId,
-      createdAt: Timestamp.fromDate(new Date()),
-      participants,
-    });
+    const roomDoc = await getDoc(roomRef);
+
+    if (!roomDoc.exists()) {
+      await setDoc(roomRef, {
+        roomId,
+        createdAt: Timestamp.fromDate(new Date()),
+        participants,
+      });
+      console.log(`Room created with ID: ${roomId}`);
+    }
   } catch (error) {
     console.error("Error creating room:", error);
     throw error;

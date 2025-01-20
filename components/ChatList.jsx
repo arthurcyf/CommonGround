@@ -1,4 +1,4 @@
-import { FlatList, ActivityIndicator, View, Text } from "react-native";
+import { FlatList, ActivityIndicator, View } from "react-native";
 import React from "react";
 import ChatCard from "./ChatCard";
 import { router } from "expo-router";
@@ -19,11 +19,6 @@ const ChatList = ({ currentUser, users }) => {
         data={users}
         keyExtractor={(item) => item.roomId || item.userId}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={{ padding: 20, alignItems: "center" }}>
-            <Text>No ongoing chats</Text>
-          </View>
-        }
         renderItem={({ item }) => (
           <ChatCard item={item} router={router} currentUser={currentUser} />
         )}

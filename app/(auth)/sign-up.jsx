@@ -29,27 +29,29 @@ const SignUp = () => {
     setIsSubmitting(true);
     try {
       const response = await createUserWithEmailAndPassword(
-          auth,
-          form.email,
-          form.password
+        auth,
+        form.email,
+        form.password
       );
-      const username = form.username;
+      const username = form.username.toLowerCase;
 
       await setDoc(doc(FIRESTORE_DB, "users", response?.user?.uid), {
-          username,
-          userId: response?.user?.uid,
+        username,
+        userId: response?.user?.uid,
       });
 
-        // Set signing-up state and ensure navigation
-        setIsSigningUp(true);
-        await router.replace("UserDetails");
+      setIsSigningUp(true);
+      await router.replace("UserDetails");
     } catch (error) {
-        alert(error.message.includes("(auth/invalid-email)") ? "Invalid email" : error.message);
+      alert(
+        error.message.includes("(auth/invalid-email)")
+          ? "Invalid email"
+          : error.message
+      );
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
-};
-
+  };
 
   return (
     <SafeAreaView className="bg-background h-full">
