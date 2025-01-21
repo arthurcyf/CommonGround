@@ -53,13 +53,11 @@ export const updateUser = async (userData) => {
 
 export const getUsernameByUserId = async (userId) => {
   try {
-    const usersRef = collection(FIRESTORE_DB, "users");
-    const q = query(usersRef, where("userId", "==", userId));
-    const querySnapshot = await getDocs(q);
+    const userDocRef = doc(usersCollection, userId);
+    const userDoc = await getDoc(userDocRef);
 
-    if (!querySnapshot.empty) {
-      const userData = querySnapshot.docs[0].data();
-      return userData.username;
+    if (userDoc.exists()) {
+      return userDoc.data().username || null;
     } else {
       return null;
     }
@@ -146,5 +144,68 @@ export const fetchAllUsers = async () => {
   } catch (error) {
     console.error("Error fetching all users:", error);
     throw error;
+  }
+};
+
+/**
+ * Fetch a user's date of birth by ID.
+ * @param {string} userId - The ID of the user.
+ * @returns {Promise<string|null>} - The user's date of birth.
+ */
+export const getDateOfBirthByUserId = async (userId) => {
+  try {
+    const userDocRef = doc(usersCollection, userId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      return userDoc.data().dateOfBirth || null;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching date of birth:", error);
+    throw new Error("Could not retrieve date of birth.");
+  }
+};
+
+/**
+ * Fetch a user's description by ID.
+ * @param {string} userId - The ID of the user.
+ * @returns {Promise<string|null>} - The user's description.
+ */
+export const getDescriptionByUserId = async (userId) => {
+  try {
+    const userDocRef = doc(usersCollection, userId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      return userDoc.data().description || null;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching description:", error);
+    throw new Error("Could not retrieve description.");
+  }
+};
+
+/**
+ * Fetch a user's profile picture by ID.
+ * @param {string} userId - The ID of the user.
+ * @returns {Promise<string|null>} - The user's profile picture URL.
+ */
+export const getProfilePictureByUserId = async (userId) => {
+  try {
+    const userDocRef = doc(usersCollection, userId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      return userDoc.data().profilePicture || null;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching profile picture:", error);
+    throw new Error("Could not retrieve profile picture.");
   }
 };

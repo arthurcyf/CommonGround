@@ -1,63 +1,115 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
-import React from "react";
-import { useRouter } from "expo-router"; // Assuming you are using a router to navigate
-import Icon from "react-native-vector-icons/FontAwesome"; // Import FontAwesome for the icon
+import { ScrollView, Text, View, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { fetchEventsByUser } from "../../../service/UserEventsSupaService"; // Service to fetch relationships from Supabase
+import { supabase } from "../../../supabaseClient"; // Supabase client
+import { getAuth } from "firebase/auth"; // Firebase Auth
+import { getFirestore, doc, getDoc } from "firebase/firestore"; // Firestore functions
 
 const Events = () => {
   const router = useRouter();
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const events = [
-    {
-      name: "New Year's Eve Party",
-      location: "3 Critchon Close",
-      date: "2024-12-31",
-      details: "Celebrate the New Year with friends and mj!"
-    },
-    {
-      name: "Mahjong session",
-      location: "4 Jalan Mas Puteh",
-      date: "2024-01-10",
-      details: "Win jons money."
-    },
-    {
-      name: "CNY celebrations",
-      location: "BT hse",
-      date: "2024-01-15",
-      details: "Join us to celebrate CNY together."
-    },
-  ];
+  useEffect(() => {
+    const fetchUserEvents = async () => {
+      setLoading(true);
+
+      const auth = getAuth();
+      const db = getFirestore();
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error("User not authenticated");
+        setLoading(false);
+        return;
+      }
+
+      const userId = user.uid;
+
+      try {
+        // Fetch relationships from Supabase
+        const userEventRelations = await fetchEventsByUser(userId);
+        if (!userEventRelations || userEventRelations.length === 0) {
+          setEvents([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch event details from Firestore
+        const eventPromises = userEventRelations.map(async (relation) => {
+          const eventDoc = await getDoc(doc(db, "event", relation.event_id));
+          if (eventDoc.exists()) {
+            return { id: eventDoc.id, ...eventDoc.data() };
+          }
+          console.error(`Event with ID ${relation.event_id} not found in Firestore.`);
+          return null;
+        });
+
+        const resolvedEvents = await Promise.all(eventPromises);
+        setEvents(resolvedEvents.filter((event) => event !== null));
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserEvents();
+  }, []);
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#FF6100" />
+      </View>
+    );
+  }
 
   return (
-    <ScrollView 
-      contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "start", paddingBottom: 100 }}
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        alignItems: "center",
+        justifyContent: "start",
+        paddingBottom: 100,
+      }}
       className="p-5 bg-white"
     >
       <Text className="text-3xl font-bold text-gray-800 mb-5">All Events</Text>
-      
-      {events.map((event, index) => (
-        <View key={index} className="mb-4 p-5 bg-gray-100 rounded-xl shadow-md w-full">
-          <Text className="text-xl font-bold text-gray-800">{event.name}</Text>
-          <Text className="text-lg text-gray-600 mt-2">{event.location}</Text>
-          <Text className="text-lg text-gray-700 mt-1">{event.date}</Text>
-          <Text className="text-base text-gray-500 mt-1">{event.details}</Text>
-        </View>
-      ))}
-      
-      {/* Add Event Button with Circular Plus Icon */}
+
+      {events.length > 0 ? (
+        events.map((event, index) => (
+          <View key={index} className="mb-4 p-5 bg-gray-100 rounded-xl shadow-md w-full">
+            <Text className="text-xl font-bold text-gray-800">{event.name}</Text>
+            <Text className="text-lg text-gray-600 mt-2">{event.location}</Text>
+            <Text className="text-lg text-gray-700 mt-1">
+              {/* Convert Firestore Timestamp to a readable date */}
+              {event.date?.toDate ? event.date.toDate().toLocaleDateString() : "Unknown Date"}
+            </Text>
+            <Text className="text-base text-gray-500 mt-1">{event.details}</Text>
+          </View>
+        ))
+      ) : (
+        <Text className="text-lg text-gray-500 mt-5">No events found for the current user.</Text>
+      )}
+
+      {/* Add Event Button */}
       <TouchableOpacity
         style={{
-          marginTop: 20, // Adds space between the last event and the button
+          marginTop: 20,
           width: 60,
           height: 60,
           borderRadius: 30,
-          backgroundColor: "#FF6100", // Primary color
+          backgroundColor: "#FF6100",
           alignItems: "center",
           justifyContent: "center",
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
-          alignSelf: "center",  // Centers the button horizontally
+          alignSelf: "center",
         }}
         onPress={() => router.push("/Profile/AddEvent")}
       >
