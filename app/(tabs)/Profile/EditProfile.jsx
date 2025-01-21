@@ -7,7 +7,6 @@ import { FIRESTORE_DB } from "../../../firebaseConfig";
 import { setDoc } from "firebase/firestore";
 import Icon from "react-native-vector-icons/FontAwesome";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Picker } from "@react-native-picker/picker";
 
 const EditProfile = () => {
   const [profilePic, setProfilePic] = useState("https://example.com/default-avatar.png");
