@@ -39,3 +39,6 @@ app-example
 
 # backend env files
 backend/.env*
+
+# backend server urls 
+utils/serverAddress.txt
