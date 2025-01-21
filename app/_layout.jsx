@@ -29,7 +29,7 @@ const MainLayout = () => {
       if (isAuthenticated && !isInApp) {
         await router.replace("home");
       } else if (!isAuthenticated) {
-        await router.replace("new-user");
+        await router.replace("newUser");
       }
     }
 

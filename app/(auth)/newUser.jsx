@@ -37,13 +37,13 @@ const NewUser = () => {
 
           <CustomButton
             title="Continue with Email"
-            handlePress={() => router.push("/sign-in")}
+            handlePress={() => router.push("/signIn")}
             containerStyles="w-full mt-7"
           />
 
           <CustomButton
             title="Sign up for an account"
-            handlePress={() => router.push("/sign-up")}
+            handlePress={() => router.push("/signUp")}
             containerStyles="w-full mt-7"
           />
         </View>
