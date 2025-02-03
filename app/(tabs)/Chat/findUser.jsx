@@ -28,7 +28,7 @@ const findUser = () => {
   const openUserProfile = (item) => {
     router.push({
       pathname: "/Chat/userProfile",
-      params: { item: JSON.stringify(item) }, // Serialize `item`
+      params: { item: JSON.stringify(item) },
     });
   };
 

@@ -75,7 +75,7 @@ const SignIn = () => {
                 Don't have an account?
               </Text>
               <Link
-                href="/sign-up"
+                href="/signUp"
                 className="text-lg font-psemibold text-primary"
               >
                 Sign Up

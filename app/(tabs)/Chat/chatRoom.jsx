@@ -26,7 +26,7 @@ const ios = Platform.OS === "ios";
 
 export default function chatRoom() {
   const { item } = useLocalSearchParams();
-  const parsedItem = JSON.parse(item); // Parse the item
+  const parsedItem = JSON.parse(item);
   const { user } = useAuth();
   const router = useRouter();
   const [messages, setMessages] = useState([]);
@@ -35,13 +35,6 @@ export default function chatRoom() {
   const scrollViewRef = useRef(null);
 
   const roomId = getRoomId(user?.uid, parsedItem?.userId);
-
-  useEffect(() => {
-    const initializeRoom = async () => {
-      await createRoomIfNotExists(roomId, [user?.uid, parsedItem?.userId]);
-    };
-    initializeRoom();
-  }, []);
 
   useEffect(() => {
     const fetchAndListenMessages = async () => {
@@ -66,6 +59,9 @@ export default function chatRoom() {
 
     try {
       const senderName = await getUsernameByUserId(user?.uid);
+
+      await createRoomIfNotExists(roomId, [user?.uid, parsedItem?.userId]);
+
       const messagesRef = await fetchRoomMessages(roomId);
 
       textRef.current = "";

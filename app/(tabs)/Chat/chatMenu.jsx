@@ -6,7 +6,6 @@ import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { StatusBar } from "expo-status-bar";
 import { useAuth } from "@/context/AuthContext.jsx";
 import { listenToChatRoomsWithDetails } from "@/service/RoomService";
-import { fetchFriendsWithDetails } from "@/service/FriendService.jsx";
 import { router } from "expo-router";
 import { listenToLatestMessages } from "@/service/MessageService.jsx";
 
@@ -26,9 +25,15 @@ const ChatMenu = () => {
             user.roomId === roomId ? { ...user, latestMessage } : user
           )
           .sort((a, b) => {
-            const aTime = a?.latestMessage?.createdAt?.seconds || 0;
-            const bTime = b?.latestMessage?.createdAt?.seconds || 0;
-            return bTime - aTime; // Descending order
+            const aTime =
+              a?.latestMessage?.createdAt?.seconds ||
+              a?.createdAt?.seconds ||
+              0;
+            const bTime =
+              b?.latestMessage?.createdAt?.seconds ||
+              b?.createdAt?.seconds ||
+              0;
+            return bTime - aTime;
           })
       );
     };
@@ -40,30 +45,28 @@ const ChatMenu = () => {
         user.uid,
         async (rooms) => {
           try {
-            const friends = await fetchFriendsWithDetails(user.uid);
+            const chatUsers = rooms.map((room) => ({
+              ...room.otherUser,
+              latestMessage: room.latestMessage,
+              roomId: room.roomId,
+              createdAt: room.createdAt,
+            }));
 
-            const allUsers = [
-              ...friends,
-              ...rooms.map((room) => ({
-                ...room.otherUser,
-                latestMessage: room.latestMessage,
-                roomId: room.roomId,
-              })),
-            ];
-
-            // Attach real-time listeners for new messages
-            const uniqueUsers = Array.from(
-              new Map(allUsers.map((user) => [user.userId, user])).values()
-            ).sort((a, b) => {
-              const aTime = a?.latestMessage?.createdAt?.seconds || 0;
-              const bTime = b?.latestMessage?.createdAt?.seconds || 0;
-              return bTime - aTime; // Descending order
+            const sortedUsers = chatUsers.sort((a, b) => {
+              const aTime =
+                a?.latestMessage?.createdAt?.seconds ||
+                a?.createdAt?.seconds ||
+                0;
+              const bTime =
+                b?.latestMessage?.createdAt?.seconds ||
+                b?.createdAt?.seconds ||
+                0;
+              return bTime - aTime;
             });
 
-            setUsers(uniqueUsers);
+            setUsers(sortedUsers);
 
-            // Listen to latest messages for each room
-            uniqueUsers.forEach((user) => {
+            chatUsers.forEach((user) => {
               if (user.roomId) {
                 const unsubscribe = listenToLatestMessages(
                   user.roomId,
@@ -83,7 +86,6 @@ const ChatMenu = () => {
       );
     }
 
-    // Cleanup listeners
     return () => {
       if (unsubscribeRooms) unsubscribeRooms();
       messageListeners.forEach((unsubscribe) => unsubscribe());
@@ -107,7 +109,7 @@ const ChatMenu = () => {
         <ChatList users={users} currentUser={user} />
       ) : (
         <View className="flex items-center" style={{ top: hp(30) }}>
-          <Text>No connections found.</Text>
+          <Text>No chats found.</Text>
         </View>
       )}
     </View>

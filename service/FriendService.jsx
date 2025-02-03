@@ -97,16 +97,13 @@ export const fetchFriendsWithDetails = async (userId) => {
   try {
     const friendsRef = doc(FIRESTORE_DB, "friends", userId);
     const friendsDoc = await getDoc(friendsRef);
-
     const friendIds = friendsDoc.exists() ? Object.keys(friendsDoc.data()) : [];
-
     const friendsDetails = await Promise.all(
       friendIds.map(async (id) => {
         const friendDoc = await getDoc(doc(FIRESTORE_DB, "users", id));
         return { userId: id, ...friendDoc.data() };
       })
     );
-
     return friendsDetails;
   } catch (error) {
     console.error("Error fetching friends with details:", error);
