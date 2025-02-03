@@ -10,6 +10,7 @@ import {
   orderBy,
   limit,
   onSnapshot,
+  deleteDoc,
 } from "firebase/firestore";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 
@@ -149,4 +150,20 @@ export const listenToChatRoomsWithDetails = (userId, callback) => {
   });
 
   return unsubscribe; // Return unsubscribe for cleanup
+};
+export const deleteChatRoom = async (item) => {
+  try {
+    const roomId = item.roomId;
+
+    if (!roomId) {
+      console.error("Room ID not found for the chat room.");
+      return;
+    }
+
+    const roomRef = doc(FIRESTORE_DB, "rooms", roomId);
+
+    await deleteDoc(roomRef);
+  } catch (error) {
+    console.error("Error deleting chat room:", error.message);
+  }
 };
