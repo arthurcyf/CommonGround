@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, TouchableOpacity, Animated } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Animated,
+  Alert,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Swipeable } from "react-native-gesture-handler";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
@@ -40,6 +47,31 @@ export default function ChatCard({ item, router, currentUser }) {
     }
   };
 
+  const handleDelete = async (item) => {
+    Alert.alert(
+      "Delete Chat",
+      "Are you sure you want to delete this chat room and all its messages?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteChatRoom(item);
+              console.log("Chat room deleted successfully.");
+            } catch (error) {
+              console.error("Error deleting chat room:", error.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderRightActions = (progress, dragX) => {
     const scale = dragX.interpolate({
       inputRange: [-100, 0],
@@ -49,7 +81,7 @@ export default function ChatCard({ item, router, currentUser }) {
 
     return (
       <TouchableOpacity
-        onPress={() => deleteChatRoom(item)}
+        onPress={() => handleDelete(item)}
         style={{
           justifyContent: "center",
           alignItems: "center",
