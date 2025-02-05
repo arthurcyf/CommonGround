@@ -10,6 +10,8 @@ import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplet
 import { googleConfig } from "../../../googleConfig";
 import 'react-native-get-random-values';
 
+const PLACES_MAPS_API_KEY = googleConfig.apiKey;
+
 const AddEvents = () => {
     const [eventName, setEventName] = useState("");
     const [eventDate, setEventDate] = useState("");
@@ -86,7 +88,7 @@ const AddEvents = () => {
                     <Text className="text-lg font-semibold text-orange-600 mt-4">Location</Text>
                     <GooglePlacesAutocomplete
                         placeholder="Search for location"
-                        query={{ key: "AIzaSyBS0oqJYJXFk9gR4-knde83wd7WTNJcxm0", language: "en" }}
+                        query={{ key: PLACES_MAPS_API_KEY, language: "en" }}
                         onPress={(data, details = null) => setEventLocation(data.description)}
                         fetchDetails={true}
                         listViewDisplayed="auto"
