@@ -1,30 +1,35 @@
+import { TouchableOpacity, View, Text, Platform } from "react-native";
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "react-native-vector-icons";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 
-const BackArrowHeader = () => {
-  const router = useRouter();
+const ios = Platform.OS == "ios";
+
+export default function BackArrowHeader() {
+  const { top } = useSafeAreaInsets();
+
+  const handleBackPress = () => {
+    router.back();
+  };
 
   return (
     <View
       style={{
+        paddingTop: ios ? top : top + 10,
+        paddingBottom: 10,
+        paddingHorizontal: 15,
         flexDirection: "row",
         alignItems: "center",
-        padding: 15,
-        backgroundColor: "#fff",
+        backgroundColor: "#fff", // White background
         borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
+        borderBottomColor: "#ddd", // Divider line
       }}
     >
-      <TouchableOpacity
-        onPress={() => router.back()}
-        style={{ marginRight: 10 }}
-      >
+      {/* Back Button */}
+      <TouchableOpacity onPress={handleBackPress} style={{ marginRight: 15 }}>
         <Feather name="chevron-left" size={24} color="#FF6100" />
       </TouchableOpacity>
     </View>
   );
-};
-
-export default BackArrowHeader;
+}
