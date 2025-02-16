@@ -48,11 +48,12 @@ const AddMembers = () => {
 
     const handleConfirmSelection = () => {
         const selectedFriendIds = Object.keys(selectedFriends).filter(id => selectedFriends[id]);
+        console.log("Passing selected friends:", selectedFriendIds);
         router.push({
             pathname: "/Profile/AddEvents",
             params: { selectedFriends: JSON.stringify(selectedFriendIds) },
         });
-    };
+    };    
 
     const selectedFriendList = friends.filter(friend => selectedFriends[friend.userId]);
 
