@@ -8,7 +8,7 @@ import {
   getProfilePictureByUserId,
 } from "../../../service/UserService";
 import { onAuthStateChanged, getAuth } from "firebase/auth";
-import { FontAwesome5 } from "@expo/vector-icons"; // Ensure this is installed: `expo install @expo/vector-icons`
+import { FontAwesome5 } from "@expo/vector-icons";
 
 const FriendsList = () => {
   const router = useRouter();
@@ -94,7 +94,8 @@ const FriendsList = () => {
 
   return (
     <ScrollView className="flex-1 p-5 bg-white">
-      <Text className="text-2xl font-bold text-gray-800 mb-5">Friends List</Text>
+      {/* Centered Friends List Header */}
+      <Text className="text-2xl font-bold text-gray-800 mb-5 text-center">Friends List</Text>
 
       {friends.map((friend) => (
         <View
@@ -156,7 +157,7 @@ const FriendsList = () => {
           justifyContent: "center",
           width: "100%",
         }}
-        onPress={() => router.push("/Profile/AddFriend")}
+        onPress={() => router.push("/Chat/findUser")}
       >
         <Text className="text-white text-lg font-bold">Add Friend</Text>
       </TouchableOpacity>
