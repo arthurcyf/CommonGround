@@ -110,3 +110,86 @@ export const fetchFriendsWithDetails = async (userId) => {
     throw error;
   }
 };
+
+/**
+ * Fetch recent activities of friends.
+ * @param {string} userId - The ID of the current user.
+ * @param {number} [limitCount=10] - The maximum number of activities to fetch.
+ * @returns {Promise<Array>} - An array of friend activities.
+ */
+export const fetchFriendActivities = async (userId, limitCount = 10) => {
+  try {
+    // Fetch friends of the current user
+    const friendsRef = collection(FIRESTORE_DB, "friends");
+    const friendsQuery = query(
+      friendsRef,
+      where("userIds", "array-contains", userId)
+    );
+    const friendsSnapshot = await getDocs(friendsQuery);
+
+    const friendIds = friendsSnapshot.docs.map((doc) =>
+      doc.data().userIds.find((id) => id !== userId)
+    );
+
+    if (friendIds.length === 0) return [];
+
+    // Fetch activities for all friends
+    const activities = [];
+
+    // Fetch recent events attended by friends
+    const eventsRef = collection(FIRESTORE_DB, "events");
+    const eventsQuery = query(
+      eventsRef,
+      where("userId", "in", friendIds),
+      orderBy("timestamp", "desc"),
+      limit(limitCount)
+    );
+    const eventsSnapshot = await getDocs(eventsQuery);
+    eventsSnapshot.forEach((doc) => {
+      activities.push({
+        type: "event",
+        ...doc.data(),
+      });
+    });
+
+    // Fetch recent messages sent by friends
+    const messagesRef = collection(FIRESTORE_DB, "messages");
+    const messagesQuery = query(
+      messagesRef,
+      where("userId", "in", friendIds),
+      orderBy("createdAt", "desc"),
+      limit(limitCount)
+    );
+    const messagesSnapshot = await getDocs(messagesQuery);
+    messagesSnapshot.forEach((doc) => {
+      activities.push({
+        type: "message",
+        ...doc.data(),
+      });
+    });
+
+    // Fetch recent interests added by friends
+    const interestsRef = collection(FIRESTORE_DB, "interests");
+    const interestsQuery = query(
+      interestsRef,
+      where("userId", "in", friendIds),
+      orderBy("timestamp", "desc"),
+      limit(limitCount)
+    );
+    const interestsSnapshot = await getDocs(interestsQuery);
+    interestsSnapshot.forEach((doc) => {
+      activities.push({
+        type: "interest",
+        ...doc.data(),
+      });
+    });
+
+    // Sort activities by timestamp in descending order
+    activities.sort((a, b) => b.timestamp?.seconds - a.timestamp?.seconds);
+
+    return activities;
+  } catch (error) {
+    console.error("Error fetching friend activities:", error);
+    throw error;
+  }
+};

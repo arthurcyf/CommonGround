@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { fetchUsersByUsername } from "@/service/UserService";
-import FindUserHeader from "../../../components/FindUserHeader.jsx";
+import BackArrowHeader from "../../../components/BackArrowHeader.jsx";
 import { Feather } from "react-native-vector-icons";
 
 const findUser = () => {
@@ -60,7 +60,7 @@ const findUser = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <FindUserHeader />
+      <BackArrowHeader />
       <View style={{ padding: 20 }}>
         <View
           style={{

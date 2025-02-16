@@ -1,6 +1,6 @@
 import { ScrollView, Text, View, TouchableOpacity, Switch } from "react-native";
 import React, { useState } from "react";
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
 import { getAuth, signOut } from "firebase/auth";
 
 const Settings = () => {
@@ -39,13 +39,21 @@ const Settings = () => {
 
   return (
     <ScrollView
-      contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "start" }}
+      contentContainerStyle={{
+        flexGrow: 1,
+        alignItems: "center",
+        justifyContent: "start",
+      }}
       className="p-5 bg-white"
     >
       {/* Notifications Preference */}
       <View
         className="flex-row justify-between items-center mb-8"
-        style={{ borderBottomWidth: 1, borderBottomColor: "#E5E5E5", paddingBottom: 8 }}
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: "#E5E5E5",
+          paddingBottom: 8,
+        }}
       >
         <Text className="text-xl text-gray-800 mr-4">Notifications</Text>
         <Switch
@@ -59,7 +67,11 @@ const Settings = () => {
       {/* Dark Mode Preference */}
       <View
         className="flex-row justify-between items-center mb-8"
-        style={{ borderBottomWidth: 1, borderBottomColor: "#E5E5E5", paddingBottom: 8 }}
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: "#E5E5E5",
+          paddingBottom: 8,
+        }}
       >
         <Text className="text-xl text-gray-800 mr-4">Dark Mode</Text>
         <Switch
@@ -75,7 +87,9 @@ const Settings = () => {
         className="bg-[#FF6100] py-3 rounded-lg mt-5 w-11/12"
         onPress={handleCopyToCalendar}
       >
-        <Text className="text-white text-lg font-bold text-center">Copy events to calendar</Text>
+        <Text className="text-white text-lg font-bold text-center">
+          Copy events to calendar
+        </Text>
       </TouchableOpacity>
 
       {/* About CommonGround Button */}
@@ -83,7 +97,9 @@ const Settings = () => {
         className="bg-[#FF6100] py-3 rounded-lg mt-5 w-11/12"
         onPress={handleAbout}
       >
-        <Text className="text-white text-lg font-bold text-center">About CommonGround</Text>
+        <Text className="text-white text-lg font-bold text-center">
+          About CommonGround
+        </Text>
       </TouchableOpacity>
 
       {/* Give Us Feedback Button */}
@@ -91,7 +107,9 @@ const Settings = () => {
         className="bg-[#FF6100] py-3 rounded-lg mt-5 w-11/12"
         onPress={handleFeedback}
       >
-        <Text className="text-white text-lg font-bold text-center">Give Us Feedback</Text>
+        <Text className="text-white text-lg font-bold text-center">
+          Give Us Feedback
+        </Text>
       </TouchableOpacity>
 
       {/* Rate CommonGround Button */}
@@ -99,7 +117,9 @@ const Settings = () => {
         className="bg-[#FF6100] py-3 rounded-lg mt-5 w-11/12"
         onPress={handleRateCommonGround}
       >
-        <Text className="text-white text-lg font-bold text-center">Rate CommonGround</Text>
+        <Text className="text-white text-lg font-bold text-center">
+          Rate CommonGround
+        </Text>
       </TouchableOpacity>
 
       {/* Logout Button */}
@@ -108,7 +128,7 @@ const Settings = () => {
         onPress={async () => {
           try {
             await signOut(auth);
-            router.replace("/new-user");
+            router.replace("/newUser");
             console.log("User signed out successfully.");
           } catch (error) {
             console.error("Error signing out: ", error.message);
@@ -118,13 +138,14 @@ const Settings = () => {
         <Text className="text-white text-lg font-bold text-center">Logout</Text>
       </TouchableOpacity>
 
-
       {/* Delete Account Button */}
       <TouchableOpacity
         className="bg-red-600 py-3 rounded-lg mt-5 w-11/12"
         onPress={handleDeleteAccount}
       >
-        <Text className="text-white text-lg font-bold text-center">Delete Account</Text>
+        <Text className="text-white text-lg font-bold text-center">
+          Delete Account
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );

@@ -10,6 +10,8 @@ import {
   orderBy,
   limit,
   onSnapshot,
+  deleteDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { FIRESTORE_DB } from "@/firebaseConfig";
 
@@ -149,4 +151,38 @@ export const listenToChatRoomsWithDetails = (userId, callback) => {
   });
 
   return unsubscribe; // Return unsubscribe for cleanup
+};
+
+export const deleteChatRoom = async (item) => {
+  try {
+    const roomId = item.roomId;
+
+    if (!roomId) {
+      console.error("Room ID not found for the chat room.");
+      return;
+    }
+
+    const roomRef = doc(FIRESTORE_DB, "rooms", roomId);
+    const messagesRef = collection(roomRef, "messages");
+    const messagesSnapshot = await getDocs(messagesRef);
+
+    const batch = writeBatch(FIRESTORE_DB);
+
+    // Add message deletions to the batch
+    messagesSnapshot.docs.forEach((messageDoc) => {
+      batch.delete(messageDoc.ref);
+    });
+
+    // Commit the batch
+    await batch.commit();
+
+    // Delete the room document
+    await deleteDoc(roomRef);
+
+    console.log(
+      `Chat room and its messages deleted successfully for roomId: ${roomId}`
+    );
+  } catch (error) {
+    console.error("Error deleting chat room and messages:", error.message);
+  }
 };
