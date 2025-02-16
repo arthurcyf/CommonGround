@@ -49,7 +49,7 @@ const AddEvents = () => {
         if (savedEventDetails) setEventDetails(savedEventDetails);
         if (savedEventState) setEventState(savedEventState);
         if (savedEventPrivacy) setEventPrivacy(savedEventPrivacy);
-    
+
         if (selectedFriendsParam) {
             const parsedFriends = JSON.parse(selectedFriendsParam);
             setSelectedFriendIds(parsedFriends);
@@ -61,7 +61,7 @@ const AddEvents = () => {
             const savedData = await AsyncStorage.getItem("eventData");
             if (savedData) {
                 const parsedData = JSON.parse(savedData);
-    
+
                 if (parsedData.eventName) setEventName(parsedData.eventName);
                 if (parsedData.eventDate) setEventDate(parsedData.eventDate);
                 if (parsedData.eventLocation) setEventLocation(parsedData.eventLocation);
@@ -71,10 +71,10 @@ const AddEvents = () => {
                 if (parsedData.selectedFriendIds) setSelectedFriendIds(parsedData.selectedFriendIds);
             }
         };
-    
+
         loadSavedEventData();
     }, []);
-    
+
 
     useEffect(() => {
         if (selectedFriendsParam) {
@@ -112,9 +112,9 @@ const AddEvents = () => {
             eventPrivacy,
             selectedFriendIds,
         };
-    
+
         await AsyncStorage.setItem("eventData", JSON.stringify(eventData));
-    
+
         router.push("/Profile/AddMembers");
     };
 
@@ -250,78 +250,81 @@ const AddEvents = () => {
                                 },
                             })}>
 
-                        <Text className="text-lg font-bold text-white">Add Members +</Text>
-                    </TouchableOpacity>
+                            <Text className="text-lg font-bold text-white">Add Members +</Text>
+                        </TouchableOpacity>
 
-                    {selectedFriends.length > 0 && (
-                        <View className="bg-white p-2 rounded-lg mb-2">
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row flex-wrap max-h-12">
-                                {selectedFriends.map((friend) => (
-                                    <View key={friend.userId} className="flex-row items-center bg-orange-500 px-3 py-1 rounded-full mr-2 mb-1">
-                                        <Text className="text-white text-sm">{friend.username || "Unknown"}</Text>
-                                        <TouchableOpacity onPress={() => setSelectedFriends(selectedFriends.filter(f => f.userId !== friend.userId))} className="ml-2">
-                                            <MaterialIcons name="close" size={14} color="white" />
-                                        </TouchableOpacity>
-                                    </View>
-                                ))}
-                            </ScrollView>
-                        </View>
-                    )}
+                        {selectedFriends.length > 0 && (
+                            <View className="bg-white p-2 rounded-lg mb-2">
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row flex-wrap max-h-12">
+                                    {selectedFriends.map((friend) => (
+                                        <View key={friend.userId} className="flex-row items-center bg-orange-500 px-3 py-1 rounded-full mr-2 mb-1">
+                                            <Text className="text-white text-sm">{friend.username || "Unknown"}</Text>
+                                            <TouchableOpacity onPress={() => setSelectedFriends(selectedFriends.filter(f => f.userId !== friend.userId))} className="ml-2">
+                                                <MaterialIcons name="close" size={14} color="white" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        )}
 
-                    {/* Event State */}
-                    <View className="mt-4">
-                        <Text className="text-lg font-semibold text-orange-600">Event State</Text>
-                        <View className="flex-row mt-2">
-                            <TouchableOpacity
-                                className={flex-1 p-3 rounded-lg items-center ${eventState === "Anyone Can Join" ? "bg-orange-500" : "bg-gray-300"}}
-                                onPress={() => setEventState("Anyone Can Join")}
-                            >
-                                <Text className="text-white text-base">Anyone Can Join</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                className={flex-1 p-3 rounded-lg items-center ml-2 ${eventState === "Invite Only" ? "bg-orange-500" : "bg-gray-300"}}
-                                onPress={() => setEventState("Invite Only")}
-                            >
-                                <Text className="text-white text-base">Invite Only</Text>
-                            </TouchableOpacity>
+                        {/* Event State */}
+                        <View className="mt-4">
+                            <Text className="text-lg font-semibold text-orange-600">Event State</Text>
+                            <View className="flex-row mt-2">
+                                <TouchableOpacity
+                                    className={`flex-1 p-3 rounded-lg items-center ${eventState === "Anyone Can Join" ? "bg-orange-500" : "bg-gray-300"}`}
+                                    onPress={() => setEventState("Anyone Can Join")}
+                                >
+                                    <Text className="text-white text-base">Anyone Can Join</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    className={`flex-1 p-3 rounded-lg items-center ml-2 ${eventState === "Invite Only" ? "bg-orange-500" : "bg-gray-300"}`}
+                                    onPress={() => setEventState("Invite Only")}
+                                >
+                                    <Text className="text-white text-base">Invite Only</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
+
+                        {/* Privacy Setting Section */}
+                        <View className="mt-6">
+                            <Text className="text-lg font-semibold text-orange-600">Privacy Setting</Text>
+                            <View className="flex-row mt-2">
+                                <TouchableOpacity
+                                    className={`flex-1 p-3 rounded-lg items-center ${eventPrivacy === "Public" ? "bg-orange-500" : "bg-gray-300"}`}
+                                    onPress={() => setEventPrivacy("Public")}
+                                >
+                                    <Text className="text-white text-base">Public</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    className={`flex-1 p-3 rounded-lg items-center ml-2 ${eventPrivacy === "Private" ? "bg-orange-500" : "bg-gray-300"}`}
+                                    onPress={() => setEventPrivacy("Private")}
+                                >
+                                    <Text className="text-white text-base">Private</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+
+                        {/* Event  Description Section */}
+                        <Text className="text-lg font-semibold text-orange-600 mt-4">Event Description</Text>
+                        <TextInput
+                            placeholder="Describe your event"
+                            value={eventDetails}
+                            onChangeText={setEventDetails}
+                            className="w-full p-3 border border-orange-300 rounded-lg bg-white text-base text-gray-800 h-32"
+                            multiline
+                        />
+
+                        <TouchableOpacity className="bg-orange-500 py-3 rounded-lg mt-4 items-center mb-5" onPress={handleAddEvent}>
+                            <Text className="text-lg font-bold text-white">Add Event</Text>
+                        </TouchableOpacity>
                     </View>
-
-                    {/* Privacy Setting Section */}
-                    <View className="mt-6">
-                        <Text className="text-lg font-semibold text-orange-600">Privacy Setting</Text>
-                        <View className="flex-row mt-2">
-                            <TouchableOpacity
-                                className={flex-1 p-3 rounded-lg items-center ${eventPrivacy === "Public" ? "bg-orange-500" : "bg-gray-300"}}
-                                onPress={() => setEventPrivacy("Public")}
-                            >
-                                <Text className="text-white text-base">Public</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                className={flex-1 p-3 rounded-lg items-center ml-2 ${eventPrivacy === "Private" ? "bg-orange-500" : "bg-gray-300"}}
-                                onPress={() => setEventPrivacy("Private")}
-                            >
-                                <Text className="text-white text-base">Private</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Event  Description Section */}
-                    <Text className="text-lg font-semibold text-orange-600 mt-4">Event Description</Text>
-                    <TextInput
-                        placeholder="Describe your event"
-                        value={eventDetails}
-                        onChangeText={setEventDetails}
-                        className="w-full p-3 border border-orange-300 rounded-lg bg-white text-base text-gray-800 h-32"
-                        multiline
-                    />
-
-                    <TouchableOpacity className="bg-orange-500 py-3 rounded-lg mt-4 items-center mb-5" onPress={handleAddEvent}>
-                        <Text className="text-lg font-bold text-white">Add Event</Text>
-                    </TouchableOpacity>
                 </View>
-            </View>
-        </ScrollView>
+            </ScrollView >
         </TouchableWithoutFeedback >
     );
 };
