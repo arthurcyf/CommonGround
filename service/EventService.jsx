@@ -9,14 +9,13 @@ import {
   doc
 } from "firebase/firestore";
 
-const eventCollection = collection(FIRESTORE_DB, "event");
-
 /**
  * Get all events
  * @returns {Promise<Array>} List of all events
  */
 export const getAllEvents = async () => {
   try {
+    const eventCollection = collection(FIRESTORE_DB, "events");
     const snapshot = await getDocs(eventCollection);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
@@ -32,7 +31,7 @@ export const getAllEvents = async () => {
  */
 export const getEventById = async (id) => {
   try {
-    const eventDoc = doc(eventCollection, id);
+    const eventDoc = doc(FIRESTORE_DB, "events", id);
     const snapshot = await getDoc(eventDoc);
     if (snapshot.exists()) {
       return { id: snapshot.id, ...snapshot.data() };
@@ -52,6 +51,7 @@ export const getEventById = async (id) => {
  */
 export const addEvent = async (eventData) => {
   try {
+    const eventCollection = collection(FIRESTORE_DB, "events");
     const docRef = await addDoc(eventCollection, eventData);
     return docRef.id;
   } catch (error) {
@@ -68,7 +68,7 @@ export const addEvent = async (eventData) => {
  */
 export const updateEvent = async (id, updatedData) => {
   try {
-    const eventDoc = doc(eventCollection, id);
+    const eventDoc = doc(FIRESTORE_DB, "events", id);
     await updateDoc(eventDoc, updatedData);
   } catch (error) {
     console.error("Error updating event:", error);
@@ -83,7 +83,7 @@ export const updateEvent = async (id, updatedData) => {
  */
 export const deleteEvent = async (id) => {
   try {
-    const eventDoc = doc(eventCollection, id);
+    const eventDoc = doc(FIRESTORE_DB, "events", id);
     await deleteDoc(eventDoc);
   } catch (error) {
     console.error("Error deleting event:", error);
@@ -92,75 +92,79 @@ export const deleteEvent = async (id) => {
 };
 
 /**
- * Get the name of an event by its ID
+ * Get an event attribute by ID
  * @param {string} eventId - The ID of the event
- * @returns {Promise<string|null>} The event name or null if not found
+ * @param {string} attribute - The attribute to retrieve
+ * @returns {Promise<string|null>} The requested attribute or null if not found
  */
-export const getEventNameById = async (eventId) => {
+const getEventAttributeById = async (eventId, attribute) => {
   try {
-    const docRef = doc(eventCollection, eventId);
-    const snapshot = await getDoc(docRef);
-    return snapshot.exists() ? snapshot.data().name || null : null;
+    const eventDoc = doc(FIRESTORE_DB, "events", eventId);
+    const snapshot = await getDoc(eventDoc);
+    return snapshot.exists() ? snapshot.data()[attribute] || null : null;
   } catch (error) {
-    console.error("Error getting event name by ID:", error);
+    console.error(`Error getting event ${attribute} by ID:`, error);
+    throw error;
+  }
+};
+
+// Wrapper functions for specific attributes
+export const getEventNameById = async (eventId) => getEventAttributeById(eventId, "name");
+export const getEventDateById = async (eventId) => getEventAttributeById(eventId, "date");
+export const getEventLocationById = async (eventId) => getEventAttributeById(eventId, "location");
+export const getEventDetailsById = async (eventId) => getEventAttributeById(eventId, "details");
+
+/**
+ * Get event state by ID
+ * @param {string} eventId - The ID of the event
+ * @returns {Promise<string|null>} The event state or null if not found
+ */
+export const getEventStateById = async (eventId) => getEventAttributeById(eventId, "state");
+
+/**
+ * Get event privacy setting by ID
+ * @param {string} eventId - The ID of the event
+ * @returns {Promise<string|null>} The event privacy or null if not found
+ */
+export const getEventPrivacyById = async (eventId) => getEventAttributeById(eventId, "privacy");
+
+/**
+ * Update an event state
+ * @param {string} eventId - Event document ID
+ * @param {string} state - New state ("Public" or "Invite Only")
+ * @returns {Promise<void>}
+ */
+export const updateEventState = async (eventId, state) => {
+  try {
+    const eventDoc = doc(FIRESTORE_DB, "events", eventId);
+    await updateDoc(eventDoc, { state });
+  } catch (error) {
+    console.error("Error updating event state:", error);
     throw error;
   }
 };
 
 /**
- * Get the date of an event by its ID
- * @param {string} eventId - The ID of the event
- * @returns {Promise<string|null>} The event date or null if not found
+ * Update event privacy setting
+ * @param {string} eventId - Event document ID
+ * @param {string} privacy - New privacy setting ("Public" or "Private")
+ * @returns {Promise<void>}
  */
-export const getEventDateById = async (eventId) => {
+export const updateEventPrivacy = async (eventId, privacy) => {
   try {
-    const docRef = doc(eventCollection, eventId);
-    const snapshot = await getDoc(docRef);
-    return snapshot.exists() ? snapshot.data().date || null : null;
+    const eventDoc = doc(FIRESTORE_DB, "events", eventId);
+    await updateDoc(eventDoc, { privacy });
   } catch (error) {
-    console.error("Error getting event date by ID:", error);
+    console.error("Error updating event privacy:", error);
     throw error;
   }
 };
 
 /**
- * Get the location of an event by its ID
- * @param {string} eventId - The ID of the event
- * @returns {Promise<string|null>} The event location or null if not found
- */
-export const getEventLocationById = async (eventId) => {
-  try {
-    const docRef = doc(eventCollection, eventId);
-    const snapshot = await getDoc(docRef);
-    return snapshot.exists() ? snapshot.data().location || null : null;
-  } catch (error) {
-    console.error("Error getting event location by ID:", error);
-    throw error;
-  }
-};
-
-/**
- * Get the details of an event by its ID
- * @param {string} eventId - The ID of the event
- * @returns {Promise<string|null>} The event details or null if not found
- */
-export const getEventDetailsById = async (eventId) => {
-  try {
-    const docRef = doc(eventCollection, eventId);
-    const snapshot = await getDoc(docRef);
-    return snapshot.exists() ? snapshot.data().details || null : null;
-  } catch (error) {
-    console.error("Error getting event details by ID:", error);
-    throw error;
-  }
-};
-
-/**
- * Get the ID of an event (for completeness, this simply returns the input)
+ * Get the ID of an event
  * @param {string} eventId - The ID of the event
  * @returns {string} The event ID
  */
 export const getEventId = (eventId) => {
-  return eventId; // Directly return the eventId since it's already provided
+  return eventId; 
 };
-

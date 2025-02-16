@@ -55,3 +55,6 @@ supabaseConfig.js
 
 - google config
 googleConfig.js
+
+firebase config
+- firebaseConfig.js
